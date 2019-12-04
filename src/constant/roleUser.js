@@ -1,0 +1,10 @@
+export default {
+  SUPER_ADMIN: 0,
+  ADMIN_COMPANY: 1,
+  DIRECTOR: 2,
+  SALE: 3,
+  MANAGER: 4,
+  END_USER: 5,
+  DELIVERY: 6,
+  CUSTOMER: 7,
+};
