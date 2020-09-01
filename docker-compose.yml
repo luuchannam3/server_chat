@@ -10,13 +10,21 @@ services:
       - .:/app
     networks:
       - common
+    depends_on: 
+      - kafka
+    environment: 
+      REDIS_HOST: 'rediscache'
+      REDIS_PORT: '6379'
+      REDIS_USER: 'redis_user'
+      MONGO_URI : 'mongodb://mongodb:27017/Medical'
+
   mongodb:
     container_name: mongodb
     image: mongo:4.2.0-bionic
     ports:
       - 27017:27017
     volumes:
-      - ./volumes/mongo:/data/db
+      - ./db/db:/data/db
     networks:
       - common
 
@@ -29,6 +37,33 @@ services:
       - ./volumes/redis:/data
     networks:
       - common
+
+  zookeeper:
+    image: wurstmeister/zookeeper:latest
+    ports:
+      - "2181:2181"
+    container_name: zookeeper
+    networks: 
+      - common
+    
+  kafka:
+    image: wurstmeister/kafka:2.11-1.1.1
+    ports:
+      - "9092:9092"
+    links:
+      - zookeeper
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_DELETE_TOPIC_ENABLE: 'true'
+      KAFKA_CREATE_TOPICS: "topic-test:1:1"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    container_name: kafka
+    networks: 
+      - common
+    
 
 networks:
   common:

@@ -5,6 +5,7 @@ import logger from '../config/winston';
 
 export async function GetProvince(req, res) {
   try {
+    console.log("abcx")
     const { domain } = req.query;
 
     let listProvince;
@@ -27,8 +28,9 @@ export async function GetProvince(req, res) {
 
 export async function GetDistrict(req, res) {
   try {
+    console.log("abcx")
     const { provinceID } = req.query;
-
+    console.log(req.query)
     let listDistrict;
 
     if (provinceID !== undefined) {
@@ -36,11 +38,11 @@ export async function GetDistrict(req, res) {
         .sort('name')
         .populate('province');
     } else {
+      console.log("else")
       listDistrict = await District.find({})
         .sort('name')
         .populate('province');
     }
-
     console.log(listDistrict[0].provinceID);
 
     res.status(statusCode.OK).json({ listDistrict });

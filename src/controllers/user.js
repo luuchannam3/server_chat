@@ -8,13 +8,22 @@ import config from '../config/main';
 import roleUser from '../constant/roleUser';
 import typeBulkWrite from '../constant/typeBulkWrite';
 import { client } from '../app';
+import user from '../models/user';
 
 // GET /api/v1/user?page=1&rows=20&q=
 // GET List User
+const { Kafka } = require('kafkajs')
+const kafka = new Kafka({
+clientId: 'my-app',
+brokers: ['kafka:9092'],
+})
 export async function GetUser(req, res) {
-  try {
-    let { page, rows, q } = req.query;
-
+  try 
+  {
+    // let { page, rows, q } = req.query;
+    let page=req.query.page
+    let rows =20
+    let q
     // Default Rows And Pages
     if (page === undefined) {
       page = 1;
@@ -23,31 +32,35 @@ export async function GetUser(req, res) {
     if (rows === undefined) {
       rows = 20;
     }
-
+    console.log(q)
     let users;
     let count;
     let userInfo;
-
+    console.log(page)
+    console.log(rows)
+    // console.log(q)
     if (q !== undefined) {
+      console.log("asas")
       userInfo = await Promise.all([
         User.find({
           $and: [
             {
-              $or: [
-                { name: { $regex: q } },
-                { email: { $regex: q } },
-                { phone: { $regex: q } },
-                { address: { $regex: q } },
-                { coin: { $eq: q } },
-              ],
+              // $or: [
+                // { name: { $regex: q } },
+                // { email: { $regex: q } },
+                // { phone: { $regex: q } },
+                // { address: { $regex: q } },
+                // { coin: { $eq: q } },
+              // ],
+              email: {$regex: q},
             },
             {
               isdelete: { $eq: false },
             },
           ],
         })
-          .skip((page - 1) * rows)
-          .limit(rows)
+          .skip((page - 1) * 20)
+          .limit(20)
           .sort('-createdAt')
           .populate('listUser')
           .populate('province')
@@ -57,13 +70,14 @@ export async function GetUser(req, res) {
         User.countDocuments({
           $and: [
             {
-              $or: [
-                { name: { $regex: q } },
-                { email: { $regex: q } },
-                { phone: { $regex: q } },
-                { address: { $regex: q } },
-                { coin: { $eq: q } },
-              ],
+              // $or: [
+              //   { name: { $regex: q } },
+              //   { email: { $regex: q } },
+              //   { phone: { $regex: q } },
+              //   { address: { $regex: q } },
+              //   { coin: { $eq: q } },
+              // ],
+              email: {$regex: q},
             },
             {
               isdelete: { $eq: false },
@@ -71,11 +85,12 @@ export async function GetUser(req, res) {
           ],
         }),
       ]);
-    } else {
+    }
+     else {
       userInfo = await Promise.all([
         User.find({ isdelete: false })
-          .skip((page - 1) * rows)
-          .limit(rows)
+          .skip((page - 1) * 20)
+          .limit(20)
           .sort('-createdAt')
           .populate('listUser')
           .populate('province')
@@ -93,7 +108,8 @@ export async function GetUser(req, res) {
       users,
       count,
     });
-  } catch (error) {
+  } 
+  catch (error) {
     logger.error(`GET /api/v1/user ${error}`);
 
     res.status(statusCode.BAD_REQUEST).json({
@@ -107,26 +123,27 @@ export async function GetUser(req, res) {
 export async function CreateUser(req, res) {
   try {
     const {
-      name,
+      username,
       password,
       email,
       phone,
       address,
-      roles,
+      position,
       province,
       district,
       state,
     } = req.body;
-
+    console.log(req.body)
     if (
-      !name ||
+      !username ||
       !password ||
       !email ||
       !phone ||
       !address ||
-      !roles ||
+      !position ||
       !state
     ) {
+      console.log("asasas")
       logger.error('POST /api/v1/user invalid params');
 
       return res.status(statusCode.BAD_REQUEST).json({
@@ -141,6 +158,7 @@ export async function CreateUser(req, res) {
     ]);
 
     const findUserByPhoneNumber = checkDB[0];
+    console.log(checkDB[0])
 
     if (findUserByPhoneNumber) {
       logger.error('POST /api/v1/user is exist user');
@@ -166,21 +184,21 @@ export async function CreateUser(req, res) {
     const hash = await bcrypt.hash(password, salt);
 
     let avatar;
-    if (roles == roleUser.SUPER_ADMIN) {
+    if (position == roleUser.SUPER_ADMIN) {
       avatar = '/avatar/superadmin.png';
-    } else if (roles == roleUser.ADMIN_COMPANY) {
+    } else if (position == roleUser.ADMIN_COMPANY) {
       avatar = '/avatar/admincompany.jgp';
-    } else if (roles == roleUser.DIRECTOR) {
+    } else if (position == roleUser.DIRECTOR) {
       avatar = '/avatar/director.jpg';
-    } else if (roles == roleUser.SALE) {
+    } else if (position == roleUser.SALE) {
       avatar = 'avatar/sale.jgp';
-    } else if (roles == roleUser.MANAGER) {
+    } else if (position == roleUser.MANAGER) {
       avatar = '/avatar/manager.jgp';
-    } else if (roles == roleUser.END_USER) {
+    } else if (position == roleUser.END_USER) {
       avatar = '/avatar/enduser.jpg';
-    } else if (roles == roleUser.DELIVERY) {
+    } else if (position == roleUser.DELIVERY) {
       avatar = '/avatar/deliver.jpg';
-    } else if (roles == roleUser.CUSTOMER) {
+    } else if (position == roleUser.CUSTOMER) {
       avatar = '/avatar/customer.jgp';
     } else {
       logger.error('POST /api/v1/user not exist role user');
@@ -191,19 +209,22 @@ export async function CreateUser(req, res) {
     }
 
     const newUser = new User({
-      name,
+      username,
       password: hash,
       email,
       phone,
       address,
-      roles,
+      position,
       province,
       district,
       avatar,
       state,
     });
+    console.log(phone)
+    console.log(newUser._id)
 
     await client.hset(config.REDIS.USER, phone, newUser._id.toString());
+    await client.hset(config.REDIS.USER, phone, username);
 
     // Save to cache
     await client.rpush(
@@ -217,6 +238,8 @@ export async function CreateUser(req, res) {
     res.status(statusCode.CREATED).json({
       user: newUser,
     });
+
+    
   } catch (error) {
     logger.error(`POST /api/v1/user ${error}`);
 
