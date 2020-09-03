@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import User from '../models/user';
+
 import Province from '../models/province';
 import District from '../models/district';
 import statusCode from '../constant/statusCode';
@@ -8,22 +9,20 @@ import config from '../config/main';
 import roleUser from '../constant/roleUser';
 import typeBulkWrite from '../constant/typeBulkWrite';
 import { client } from '../app';
-import user from '../models/user';
 
 // GET /api/v1/user?page=1&rows=20&q=
 // GET List User
-const { Kafka } = require('kafkajs')
+const { Kafka } = require('kafkajs');
 const kafka = new Kafka({
-clientId: 'my-app',
-brokers: ['kafka:9092'],
-})
+  clientId: 'my-app',
+  brokers: ['kafka:9092'],
+});
 export async function GetUser(req, res) {
-  try 
-  {
+  try {
     // let { page, rows, q } = req.query;
-    let page=req.query.page
-    let rows =20
-    let q
+    let page = req.query.page;
+    let rows = 20;
+    let q;
     // Default Rows And Pages
     if (page === undefined) {
       page = 1;
@@ -32,27 +31,27 @@ export async function GetUser(req, res) {
     if (rows === undefined) {
       rows = 20;
     }
-    console.log(q)
+    console.log(q);
     let users;
     let count;
     let userInfo;
-    console.log(page)
-    console.log(rows)
+    console.log(page);
+    console.log(rows);
     // console.log(q)
     if (q !== undefined) {
-      console.log("asas")
+      console.log('asas');
       userInfo = await Promise.all([
         User.find({
           $and: [
             {
               // $or: [
-                // { name: { $regex: q } },
-                // { email: { $regex: q } },
-                // { phone: { $regex: q } },
-                // { address: { $regex: q } },
-                // { coin: { $eq: q } },
+              // { name: { $regex: q } },
+              // { email: { $regex: q } },
+              // { phone: { $regex: q } },
+              // { address: { $regex: q } },
+              // { coin: { $eq: q } },
               // ],
-              email: {$regex: q},
+              email: { $regex: q },
             },
             {
               isdelete: { $eq: false },
@@ -77,7 +76,7 @@ export async function GetUser(req, res) {
               //   { address: { $regex: q } },
               //   { coin: { $eq: q } },
               // ],
-              email: {$regex: q},
+              email: { $regex: q },
             },
             {
               isdelete: { $eq: false },
@@ -85,8 +84,7 @@ export async function GetUser(req, res) {
           ],
         }),
       ]);
-    }
-     else {
+    } else {
       userInfo = await Promise.all([
         User.find({ isdelete: false })
           .skip((page - 1) * 20)
@@ -108,8 +106,7 @@ export async function GetUser(req, res) {
       users,
       count,
     });
-  } 
-  catch (error) {
+  } catch (error) {
     logger.error(`GET /api/v1/user ${error}`);
 
     res.status(statusCode.BAD_REQUEST).json({
@@ -133,7 +130,7 @@ export async function CreateUser(req, res) {
       district,
       state,
     } = req.body;
-    console.log(req.body)
+    console.log(req.body);
     if (
       !username ||
       !password ||
@@ -143,7 +140,7 @@ export async function CreateUser(req, res) {
       !position ||
       !state
     ) {
-      console.log("asasas")
+      console.log('asasas');
       logger.error('POST /api/v1/user invalid params');
 
       return res.status(statusCode.BAD_REQUEST).json({
@@ -158,7 +155,7 @@ export async function CreateUser(req, res) {
     ]);
 
     const findUserByPhoneNumber = checkDB[0];
-    console.log(checkDB[0])
+    console.log(checkDB[0]);
 
     if (findUserByPhoneNumber) {
       logger.error('POST /api/v1/user is exist user');
@@ -220,8 +217,8 @@ export async function CreateUser(req, res) {
       avatar,
       state,
     });
-    console.log(phone)
-    console.log(newUser._id)
+    console.log(phone);
+    console.log(newUser._id);
 
     await client.hset(config.REDIS.USER, phone, newUser._id.toString());
     await client.hset(config.REDIS.USER, phone, username);
@@ -238,8 +235,6 @@ export async function CreateUser(req, res) {
     res.status(statusCode.CREATED).json({
       user: newUser,
     });
-
-    
   } catch (error) {
     logger.error(`POST /api/v1/user ${error}`);
 

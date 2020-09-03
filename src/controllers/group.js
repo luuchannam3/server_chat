@@ -1,20 +1,19 @@
 // import Group from '../models/group';
 import statusCode from '../constant/statusCode';
 import logger from '../config/winston';
-import group from '../models/group';
-import user from '../models/user';
+import Group from '../models/group';
 
 export async function GetGroup(req, res) {
   try {
-    const { group_id } = req.query;
-    console.log(group_id)
+    const id = req.query.id;
+    console.log(id);
 
     let listGroup;
 
     if (group_id != undefined) {
-      listGroup = await group.find({_id: group_id}).sort('create');
+      listGroup = await Group.find({ _id: group_id }).sort('created');
     } else {
-      listGroup = await Group.find({}).sort('create');
+      listGroup = await Group.find({}).sort('created');
     }
 
     res.status(statusCode.OK).json({ listGroup });
@@ -29,30 +28,29 @@ export async function GetGroup(req, res) {
 
 export async function CreateGroup(req, res) {
   try {
-    const avatarGroup = req.body.avatarGroup
-    const created= req.body.created
-    const description = req.body.description
-    const nameGroup = req.body.nameGroup
-    const member = req.body.member
-    const user_id=req.query
+    const _id = req.body._id;
+    const avatarGroup = req.body.avatarGroup;
+    const created = req.body.created || Date.now();
+    const description = req.body.description;
+    const nameGroup = req.body.nameGroup;
+    const member = req.body.member;
+    const user_id = req.query.user_id;
     // const admin=req.body.admin
-    console.log(member)
+    console.log(member);
     // console.log(typeof member)
-    const group1 = new group({
-      _id: "2",
+    const group1 = new Group({
       avatarGroup: avatarGroup,
       created: created,
       description: description,
       // admin: admin,
       member: member,
-      nameGroup: nameGroup
-    })
-    console.log(group1)
-    group1.save(function (err) {
-      // if (err) console.log(err)
-      // saved!
+      nameGroup: nameGroup,
+      id_user: user_id,
+      _id: _id,
     });
-    
+    await group1.save();
+    console.log(group1);
+
     res.status(statusCode.OK).json({ group1 });
   } catch (error) {
     logger.error(`POST /api/v1/group ${error}`);
@@ -63,20 +61,27 @@ export async function CreateGroup(req, res) {
   }
 }
 
-export async function DeleteGroup(req, res) {
+
+export async function AddUserToGroup(req, res) {
   try {
-    const { group_id } = req.query;
-    console.log(group_id)
+    const group_id = req.query.group_id;
+    const user_id = req.query.user_id;
 
-    let listGroup;
+    let group = await Group.findOne({
+      $and: [{ _id: group_id }, { id_user: user_id }],
+    });
 
-    if (group_id != undefined) {
-      listGroup = await group.find({_id: group_id}).sort('create');
-    } else {
-      listGroup = await Group.find({}).sort('create');
-    }
+    if (!group)
+      res.status(statusCode.BAD_REQUEST).json({
+        error: 'You cannot add',
+      });
 
-    res.status(statusCode.OK).json({ listGroup });
+    const member = req.body.member;
+    group.members.push(member);
+
+    await group.save();
+
+    res.status(statusCode.OK).json(group);
   } catch (error) {
     logger.error(`GET /api/v1/group ${error}`);
 
@@ -86,20 +91,29 @@ export async function DeleteGroup(req, res) {
   }
 }
 
-export async function AddGroup(req, res) {
+export async function DeleteUserInGroup(req, res) {
   try {
-    const { group_id } = req.query;
-    console.log(group_id)
+    const group_id = req.query.group_id;
+    const user_id = req.query.user_id;
+    const member_id = req.query.member_id;
 
-    let listGroup;
+    let group = await Group.findOne({
+      $and: [{ _id: group_id }, { id_user: user_id }],
+    });
 
-    if (group_id != undefined) {
-      listGroup = await group.find({_id: group_id}).sort('create');
-    } else {
-      listGroup = await Group.find({}).sort('create');
-    }
+    if (!group)
+      res.status(statusCode.BAD_REQUEST).json({
+        error: 'You cannot delete',
+      });
 
-    res.status(statusCode.OK).json({ listGroup });
+    const removeIndex = group.members
+      .map((member) => member.id)
+      .indexOf(member_id);
+    group.members.splice(removeIndex, 1);
+
+    await group.save();
+
+    res.status(statusCode.OK).json(group.members);
   } catch (error) {
     logger.error(`GET /api/v1/group ${error}`);
 
@@ -108,3 +122,4 @@ export async function AddGroup(req, res) {
     });
   }
 }
+
