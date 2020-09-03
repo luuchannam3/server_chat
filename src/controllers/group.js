@@ -62,3 +62,49 @@ export async function CreateGroup(req, res) {
     });
   }
 }
+
+export async function DeleteGroup(req, res) {
+  try {
+    const { group_id } = req.query;
+    console.log(group_id)
+
+    let listGroup;
+
+    if (group_id != undefined) {
+      listGroup = await group.find({_id: group_id}).sort('create');
+    } else {
+      listGroup = await Group.find({}).sort('create');
+    }
+
+    res.status(statusCode.OK).json({ listGroup });
+  } catch (error) {
+    logger.error(`GET /api/v1/group ${error}`);
+
+    res.status(statusCode.BAD_REQUEST).json({
+      error: 'Bad Request',
+    });
+  }
+}
+
+export async function AddGroup(req, res) {
+  try {
+    const { group_id } = req.query;
+    console.log(group_id)
+
+    let listGroup;
+
+    if (group_id != undefined) {
+      listGroup = await group.find({_id: group_id}).sort('create');
+    } else {
+      listGroup = await Group.find({}).sort('create');
+    }
+
+    res.status(statusCode.OK).json({ listGroup });
+  } catch (error) {
+    logger.error(`GET /api/v1/group ${error}`);
+
+    res.status(statusCode.BAD_REQUEST).json({
+      error: 'Bad Request',
+    });
+  }
+}

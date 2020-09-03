@@ -6,11 +6,13 @@ const ConversationSchema = new Schema({
   url: { type: String},
   type: {type: Number},
   name: {type: String},
-  updateAt: {type: Date},
-  members: {type: Array}
+  updateAt: {type: Date, default: Date.now},
+  members: {type: Array},
+  isSeen: {type: Boolean, default: false}
 },
 {
-  collection: 'Conversation'
+  collection: 'Conversation',
+  versionKey: false
 }
 );
 

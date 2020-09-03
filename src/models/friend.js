@@ -1,11 +1,15 @@
 import { Schema, model } from 'mongoose';
 
 const FriendSchema = new Schema({
-  id_user: { type: String},
-  username: { type: String },
-  imageurl: { type: String},
-  friend: {type: Array},
-  address: {type: String}
+  _id: { type: String},
+  friend: [
+    {
+      _id: {type: String},
+      adress: {type: String},
+      imageurl: {type: String},
+      username: {type: String}
+    },
+  ]
 },
 {
   collection: 'Friend'

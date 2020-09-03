@@ -5,17 +5,16 @@ const GroupSchema = new Schema({
   avatarGroup: { type: String },
   created: { type: Date},
   description: {type: String},
-  // admin: {
-  //     type: Schema.Types.ObjectId,
-  //     ref: 'User'
-  // },
-  member: [{
-    id_object: {
+  member: [
+    {
       type: Schema.Types.ObjectId,
       ref: 'User',
-      id_user: {type: String}
+      avatar: {type: String},
+      id: {type: String},
+      name: {type: String},
+      token: {type: String}
     },    
-  }],
+  ],
   nameGroup: {type: String}
 },
 {

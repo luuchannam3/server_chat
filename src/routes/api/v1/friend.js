@@ -7,7 +7,7 @@ const router = express.Router();
 // GET /api/v1/group?user_id=?
 // get list friend
 router.get('/', FriendController.GetFriend);
-// delete friend
+// delete 1 friend in list friend
 router.delete('/', FriendController.DeleteFriend);
 // add friend
 router.post('/',FriendController.AddFriend)

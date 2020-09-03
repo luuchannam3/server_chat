@@ -8,10 +8,10 @@ const router = express.Router();
 // get user's group
 router.get('/', GroupController.GetGroup);
 // delete user in group
-// router.delete('/',GroupController)
+router.delete('/',GroupController.DeleteGroup)
 // create new group 
 router.post('/', GroupController.CreateGroup);
 // add new user to group
-// router.put('/',GroupController)
+router.put('/',GroupController.AddGroup)
 
 export default router;
