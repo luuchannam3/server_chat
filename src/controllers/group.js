@@ -2,11 +2,24 @@
 import statusCode from '../constant/statusCode';
 import logger from '../config/winston';
 import Group from '../models/group';
+import user from '../models/user';
+
+function makeid(length) {
+  let text = '';
+  const possible =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+  for (let i = 0; i < length; i++) {
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
+  }
+
+  return text;
+}
 
 export async function GetGroup(req, res) {
   try {
-    const id = req.query.id;
-    console.log(id);
+    const { group_id } = req.query;
+    console.log(group_id);
 
     let listGroup;
 
@@ -28,28 +41,35 @@ export async function GetGroup(req, res) {
 
 export async function CreateGroup(req, res) {
   try {
-    const _id = req.body._id;
+    let id;
+    let check = true;
+    while (check) {
+      id = '-' + makeid(19).toString();
+      let temp = await Group.findOne({ _id: id });
+      console.log({ temp });
+      if (!temp) check = false;
+    }
+
+    console.log('create');
     const avatarGroup = req.body.avatarGroup;
     const created = req.body.created || Date.now();
     const description = req.body.description;
     const nameGroup = req.body.nameGroup;
-    const member = req.body.member;
+    const members = req.body.members;
     const user_id = req.query.user_id;
-    // const admin=req.body.admin
-    console.log(member);
-    // console.log(typeof member)
+
     const group1 = new Group({
+      _id: id,
       avatarGroup: avatarGroup,
       created: created,
       description: description,
       // admin: admin,
-      member: member,
+      members: members,
       nameGroup: nameGroup,
       id_user: user_id,
-      _id: _id,
     });
+
     await group1.save();
-    console.log(group1);
 
     res.status(statusCode.OK).json({ group1 });
   } catch (error) {
@@ -60,7 +80,6 @@ export async function CreateGroup(req, res) {
     });
   }
 }
-
 
 export async function AddUserToGroup(req, res) {
   try {
@@ -122,4 +141,3 @@ export async function DeleteUserInGroup(req, res) {
     });
   }
 }
-
