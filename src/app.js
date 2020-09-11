@@ -5,7 +5,7 @@ import config from './config/main.js';
 import logger from './config/winston';
 import UserAPIV1Routes from './routes/api/v1/user';
 import AddressAPIV1Routes from './routes/api/v1/address';
-// import AvatarGroupAPIV1Routes from './routes/api/v1/avatargroup'
+import AvatarGroupAPIV1Routes from './routes/api/v1/avatargroup'
 // import AvatarGroupAPIV1Routes from './routes/api/v1/friendmessage'
 import FriendAPIV1Routes from './routes/api/v1/friend'
 // import AvatarGroupAPIV1Routes from './routes/api/v1/usergroup'
@@ -14,9 +14,7 @@ import FriendAPIV1Routes from './routes/api/v1/friend'
 import GroupAPIV1Routes from './routes/api/v1/group'
 import ConversationAPIV1Routes from './routes/api/v1/conversation'
 // import AvatarGroupAPIV1Routes from './routes/api/v1/groupuser'
-import GroupModel from './models/group';
-import UserModel from './models/user';
-import group from './models/group';
+import multer from 'multer'
 
 const app = express();
 
@@ -59,7 +57,7 @@ app.use(express.static('public'));
 
 app.use('/api/v1/user', UserAPIV1Routes);
 app.use('/api/v1/address', AddressAPIV1Routes);
-// app.use('/api/v1/message/image/avatar/$user_id/$group_id', AvatarGroupAPIV1Routes)
+app.use('/api/v1/avatargroup', AvatarGroupAPIV1Routes)
 // app.use('/api/v1/message/$user_id/$friend_id',FriendMessageAPIV1Routes)
 app.use('/api/v1/friend',FriendAPIV1Routes)
 // app.use('/api/v1/group/$user_id/$group_id',UserGroupAPIV1Routes)

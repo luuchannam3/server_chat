@@ -7,8 +7,8 @@ const ConversationSchema = new Schema({
   type: {type: Number},
   name: {type: String},
   updateAt: {type: Date, default: Date.now},
-  members: {type: Array},
-  isSeen: {type: Boolean, default: false}
+  listviewer: {type: Array},
+  members: {type: Array}
 },
 {
   collection: 'Conversation',

@@ -16,7 +16,7 @@ services:
       REDIS_HOST: 'rediscache'
       REDIS_PORT: '6379'
       REDIS_USER: 'redis_user'
-      MONGO_URI: 'mongodb://mongodb:27017/Chat'
+      MONGO_URI: 'mongodb://mongodb:27017/Medical'
 
   mongodb:
     container_name: mongodb

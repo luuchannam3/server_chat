@@ -8,7 +8,8 @@ const PrivateChatSchema = new Schema({
     isSender: { type: String }
 },
     {
-        collection: 'Private_Chat'
+        collection: 'Private_Chat',
+        versionKey: false
     }
 );
 

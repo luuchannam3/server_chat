@@ -15,7 +15,7 @@ export async function GetFriend(req, res) {
     let listFriend;
 
     if (user_id != undefined) {
-      listFriend = await Friend.find({_id: user_id}).exec()
+      listFriend = await Friend.find({ _id: user_id }).exec()
     } else {
       listFriend = await Friend.find({}).exec()
     }
@@ -37,8 +37,8 @@ export async function AddFriend(req, res) {
     console.log(user_id)
     console.log(friend_id)
     const adress = req.body.adress
-    const imageurl =req.body.imageurl
-    const username= req.body.username
+    const imageurl = req.body.imageurl
+    const username = req.body.username
     const friend1 = {
       _id: friend_id,
       adress: adress,
@@ -46,26 +46,27 @@ export async function AddFriend(req, res) {
       username: username
     }
     // add friend
-    if (user_id != undefined && friend_id!= undefined) {
+    if (user_id != undefined && friend_id != undefined) {
       Friend.findOneAndUpdate(
-        {_id: user_id},
-        { $push: {friend: {_id: friend_id, adress: adress, imageurl: imageurl, username: username}}},
-        {new: true}, (err,result) => {
+        { _id: user_id },
+        { $push: { friend: { _id: friend_id, adress: adress, imageurl: imageurl, username: username } } },
+        { new: true }, (err, result) => {
 
         }
       )
+      
       // create conversationId
-      var conversationId= ''
-      var id1='',id2=''
-      if(parseInt(user_id)>parseInt(friend_id)){
+      var conversationId = ''
+      var id1 = '', id2 = ''
+      if (parseInt(user_id) > parseInt(friend_id)) {
         conversationId = `${friend_id}-${user_id}`
-        id1=friend_id
-        id2=user_id
+        id1 = friend_id
+        id2 = user_id
       }
-      else{
+      else {
         conversationId = `${user_id}-${friend_id}`
-        id1=user_id
-        id2=friend_id
+        id1 = user_id
+        id2 = friend_id
       }
       // create new converesation
       const conversation = new Conversation({
@@ -74,10 +75,11 @@ export async function AddFriend(req, res) {
         url: '',
         type: 0,
         name: '',
-        members: [id1,id2]
+        listviewer: [],
+        members: [id1, id2],
       })
-      conversation.save((err)=>{
-        if(err) console.log(err)
+      conversation.save((err) => {
+        if (err) console.log(err)
       })
       // add message
       const message = new Private_Chat({
@@ -87,10 +89,10 @@ export async function AddFriend(req, res) {
         isSender: user_id
       })
       message.save((err) => {
-        if(err) console.log(err)
+        if (err) console.log(err)
       })
     }
-    
+
     res.status(statusCode.OK).json({ friend1 });
   } catch (error) {
     logger.error(`POST /api/v1/friend ${error}`);
@@ -108,33 +110,33 @@ export async function DeleteFriend(req, res) {
     console.log(user_id)
     console.log(friend_id)
 
-    if (user_id != undefined && friend_id!= undefined) {
+    if (user_id != undefined && friend_id != undefined) {
       // delete friend
-      Friend.update({ _id: user_id }, { "$pull": { "friend": { "_id": friend_id } }}, { safe: true, multi:true }, function(err, obj) {
+      Friend.update({ _id: user_id }, { "$pull": { "friend": { "_id": friend_id } } }, { safe: true, multi: true }, function (err, obj) {
       });
       //get conversationid
-      var conversationId= ''
-      var id1='',id2=''
-      if(parseInt(user_id)>parseInt(friend_id)){
+      var conversationId = ''
+      var id1 = '', id2 = ''
+      if (parseInt(user_id) > parseInt(friend_id)) {
         conversationId = `${friend_id}-${user_id}`
-        id1=friend_id
-        id2=user_id
+        id1 = friend_id
+        id2 = user_id
       }
-      else{
+      else {
         conversationId = `${user_id}-${friend_id}`
-        id1=user_id
-        id2=friend_id
+        id1 = user_id
+        id2 = friend_id
       }
       // delete conversation
-      Conversation.remove({_id : conversationId}, (err) =>{
+      Conversation.remove({ _id: conversationId }, (err) => {
 
       })
       // delete message
-      Private_Chat.remove({id_Conversation: conversationId}, (err) => {
+      Private_Chat.remove({ id_Conversation: conversationId }, (err) => {
 
       })
     }
-    
+
     res.status(statusCode.OK).json({ friend_id });
   } catch (error) {
     logger.error(`POST /api/v1/friend ${error}`);

@@ -6,7 +6,8 @@ const GroupChatSchema = new Schema({
     isSender: { type: String }
 },
     {
-        collection: 'Group_Chat'
+        collection: 'Group_Chat',
+        versionKey: false
     }
 );
 

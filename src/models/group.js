@@ -6,12 +6,8 @@ const GroupSchema = new Schema(
     _id: { type: String, required: true, unique: true },
     id_user: { type: String },
     avatarGroup: { type: String },
-    created: { type: String },
+    created: { type: Date ,default: Date.now},
     description: { type: String },
-    // admin: {
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'User'
-    // },
     members: [
       {
         id: {
@@ -28,6 +24,7 @@ const GroupSchema = new Schema(
   },
   {
     collection: 'Group',
+    versionKey: false
   },
 );
 
