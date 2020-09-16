@@ -1,3 +1,4 @@
+import { Schema, model } from 'mongoose';
 const GroupChatSchema = new Schema({
     id_Conversation: { type: String },
     Content: { type: String },

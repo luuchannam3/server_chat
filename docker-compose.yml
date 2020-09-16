@@ -24,7 +24,7 @@ services:
     ports:
       - 27017:27017
     volumes:
-      - ./db/db:/data/db
+      - ./db:/data/db
     networks:
       - common
 

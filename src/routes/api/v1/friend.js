@@ -3,7 +3,6 @@ import * as FriendController from '../../../controllers/friend';
 import user from '../../../models/user';
 
 const router = express.Router();
-
 // GET /api/v1/group?user_id=?
 // get list friend
 router.get('/', FriendController.GetFriend);
