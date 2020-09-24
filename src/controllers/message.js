@@ -6,6 +6,8 @@ import user from '../models/user';
 import Conversation from '../models/conversation'
 import Private_Chat from '../models/private_chat'
 import Group_Chat from '../models/group_chat'
+import type from '../models/type'
+import kafka from 'kafka-node'
 
 function distinguish(str) {
     var res = str.split('-')
@@ -18,77 +20,26 @@ function distinguish(str) {
         else return false
     }
 }
-
 export async function GetMessage(req, res) {
     try {
-        const user_id = req.query.user_id
+        const id_sender = req.query.id_sender
         const conversation_id = req.query.conversation_id
         const page = req.query.page
-
         let listMessage;
-
-        if (user_id != undefined && conversation_id != undefined) {
+        console.log(conversation_id)
+        if (id_sender != undefined && conversation_id != undefined) {
             var result = distinguish(conversation_id)
-            if(result==true){
-                listMessage = await Private_Chat.find({}).sort('time').skip((page - 1) * 20).limit(20*page)
+            if (result == true) {
+                listMessage = await Private_Chat.find({id_Conversation: conversation_id}).sort('time').skip((page - 1) * 20).limit(20 * page)
             }
-            else{
-                listMessage = await Group_Chat.find({}).sort('time').skip((page - 1) * 20).limit(20*page)
+            else {
+                listMessage = await Group_Chat.find({id_Conversation: conversation_id}).sort('time').skip((page - 1) * 20).limit(20 * page)
             }
-            
         }
-        res.status(statusCode.OK).json({ listMessage });
+        // console.log(listMessage)
+        res.render('index1',{id_sender: id_sender,conversation_id:conversation_id, listMessage: listMessage});
     } catch (error) {
         logger.error(`GET /api/v1/message ${error}`);
-
-        res.status(statusCode.BAD_REQUEST).json({
-            error: 'Bad Request',
-        });
-    }
-}
-
-
-export async function AddMessage(req, res) {
-    try {
-        const user_id = req.query.user_id
-        const conversation_id = req.query.conversation_id
-        const Content = req.body.Content
-        const isImage = req.body.isImage
-        // distinguish group_chat or private_chat
-        let chat
-        if (conversation_id != undefined) {
-            var result = distinguish(conversation_id)
-            // result == true - private_chat
-            // result ==false - group_chat
-            
-            if (result == true) {
-
-                chat = new Private_Chat({
-                    id_Conversation: conversation_id,
-                    Content: Content,
-                    isImage: isImage,
-                    isSender: user_id
-                });
-
-                await chat.save();
-            }
-            // group_chat
-            else {
-
-                chat = new Group_Chat({
-                    id_Conversation: conversation_id,
-                    Content: Content,
-                    isImage: isImage,
-                    isSender: user_id
-                });
-
-                await chat.save();
-            }
-        }
-
-        res.status(statusCode.OK).json({ chat })
-    } catch (error) {
-        logger.error(`POST /api/v1/message ${error}`);
 
         res.status(statusCode.BAD_REQUEST).json({
             error: 'Bad Request',

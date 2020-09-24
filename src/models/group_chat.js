@@ -3,7 +3,7 @@ const GroupChatSchema = new Schema({
     id_Conversation: { type: String },
     Content: { type: String },
     time: { type: Date , default: Date.now},
-    isImage: { type: String },
+    isImage: { type: Boolean, default: false },
     isSender: { type: String }
 },
     {

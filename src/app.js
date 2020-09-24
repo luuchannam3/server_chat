@@ -11,6 +11,8 @@ import MessageAPIV1Routes from './routes/api/v1/message'
 import GroupAPIV1Routes from './routes/api/v1/group'
 import ConversationAPIV1Routes from './routes/api/v1/conversation'
 import multer from 'multer'
+import bodyParser from 'body-parser'
+import path from 'path'
 
 const app = express();
 
@@ -47,9 +49,15 @@ export const client = new Redis({
   port: config.REDIS.PORT,
 });
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(express.static('public'));
+// app.use(express.json());
+// app.use(express.urlencoded({ extended: false }));
+app.use(express.static('src'));
+
+app.set('views','./src');
+app.set('view engine', 'ejs');
+
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use('/api/v1/user', UserAPIV1Routes);
 app.use('/api/v1/address', AddressAPIV1Routes);
@@ -58,4 +66,5 @@ app.use('/api/v1/friend',FriendAPIV1Routes)
 app.use('/api/v1/message',MessageAPIV1Routes)
 app.use('/api/v1/group',GroupAPIV1Routes)
 app.use('/api/v1/conversation',ConversationAPIV1Routes)
+
 export default app;

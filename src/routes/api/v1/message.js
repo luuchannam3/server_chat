@@ -6,8 +6,9 @@ const router = express.Router();
 console.log("asasas")
 // GET /api/v1/group?user_id=?
 // get user's group
-router.get('/', MessageController.GetMessage);
+router.get("/", MessageController.GetMessage);
+// router.get('/', MessageController.GetMessage);
 // create new group
-router.post('/', MessageController.AddMessage);
+// router.post('/', MessageController.AddMessage);
 
 export default router;

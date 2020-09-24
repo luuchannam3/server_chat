@@ -10,7 +10,7 @@ export async function GetFriend(req, res) {
   try {
     const user_id = req.query.user_id
 
-    console.log(user_id)
+    // console.log(user_id)
 
     let listFriend;
 
