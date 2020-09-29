@@ -3,6 +3,7 @@ import socket from 'socket.io';
 import kafka from 'kafka-node'
 import app from './app';
 import type from './models/type'
+import $ from 'jquery';
 
 const server = http.createServer(app);
 

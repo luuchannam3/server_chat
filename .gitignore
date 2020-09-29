@@ -23,6 +23,7 @@ yarn-error.log*
 # Volumes
 volumes
 db
+db1
 
 # Logs
 logs
