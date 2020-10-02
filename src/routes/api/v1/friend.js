@@ -11,5 +11,4 @@ router.delete('/', FriendController.DeleteFriend);
 // add friend
 router.post('/',FriendController.AddFriend)
 
-
 export default router;

@@ -66,7 +66,6 @@ export async function CreateGroup(req, res) {
       id_user: user_id,
       avatarGroup: avatarGroup,
       description: description,
-      // admin: admin,
       members: members,
       nameGroup: nameGroup
     });

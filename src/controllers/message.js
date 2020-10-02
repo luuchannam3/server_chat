@@ -36,7 +36,6 @@ export async function GetMessage(req, res) {
                 listMessage = await Group_Chat.find({id_Conversation: conversation_id}).sort('time').skip((page - 1) * 20).limit(20 * page)
             }
         }
-        // console.log(listMessage)
         res.render('index1',{id_sender: id_sender,conversation_id:conversation_id, listMessage: listMessage});
     } catch (error) {
         logger.error(`GET /api/v1/message ${error}`);

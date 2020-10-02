@@ -14,7 +14,7 @@ export async function UploadImage(req, res) {
       filename: (req, file, cb) => {
         var math = ["image/png", "image/jpeg"];
         if (math.indexOf(file.mimetype) === -1) {
-          res.status(statusCode.BAD_REQUEST).json({
+          res.status(statusCode.BAD_REQUEST).json({ 
             error: "The file is invalid"
           })
           return;
@@ -35,6 +35,7 @@ export async function UploadImage(req, res) {
         req.file
       );
       path=req.file.path
+      console.log(path)
       Conversation.findOne({ _id: conversation_id }, function (err, doc) {
         doc.url = path
         doc.save();

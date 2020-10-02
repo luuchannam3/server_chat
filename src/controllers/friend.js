@@ -10,8 +10,6 @@ export async function GetFriend(req, res) {
   try {
     const user_id = req.query.user_id
 
-    // console.log(user_id)
-
     let listFriend;
 
     if (user_id != undefined) {
@@ -34,8 +32,6 @@ export async function AddFriend(req, res) {
   try {
     const user_id = req.query.user_id
     const friend_id = req.query.friend_id
-    console.log(user_id)
-    console.log(friend_id)
     const adress = req.body.adress
     const imageurl = req.body.imageurl
     const username = req.body.username
@@ -54,7 +50,6 @@ export async function AddFriend(req, res) {
 
         }
       )
-      
       // create conversationId
       var conversationId = ''
       var id1 = '', id2 = ''
