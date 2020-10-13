@@ -10,12 +10,11 @@ docker-build-master:
   services:
     - docker:dind
   before_script:
-    - docker login harbor.zinza.com.vn
+    docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     - docker build -t harbor.zinza.com.vn/medical/chat/socket-server .
     - docker push harbor.zinza.com.vn/medical/chat/socket-server
 avatargroup_test:
-#   image: node:8.11-alpine
   image: harbor.zinza.com.vn/medical/chat/socket-server
   stage: test
   services:
@@ -28,7 +27,6 @@ avatargroup_test:
     - npm run avatargroup_test
   when: manual
 conversation_test:
-  #   image: node:8.11-alpine
   image: harbor.zinza.com.vn/medical/chat/socket-server
   stage: test
   services:
@@ -41,7 +39,6 @@ conversation_test:
     - npm run conversation_test
   when: manual
 friend_test:
-  #   image: node:8.11-alpine
   image: harbor.zinza.com.vn/medical/chat/socket-server
   stage: test
   services:
@@ -54,7 +51,6 @@ friend_test:
     - npm run friend_test
   when: manual
 group_test:
-  #   image: node:8.11-alpine
   image: harbor.zinza.com.vn/medical/chat/socket-server
   stage: test
   services:
@@ -67,7 +63,6 @@ group_test:
     - npm run group_test
   when: manual
 message_test:
-  #   image: node:8.11-alpine
   image: harbor.zinza.com.vn/medical/chat/socket-server
   stage: test
   services:
