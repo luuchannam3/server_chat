@@ -10,7 +10,7 @@ docker-build-master:
   services:
     - docker:dind
   before_script:
-    - docker login -u "S$CI_REGISTRY_UER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker login harbor.zinza.com.vn
   script:
     - docker build -t harbor.zinza.com.vn/medical/chat/socket-server .
     - docker push harbor.zinza.com.vn/medical/chat/socket-server
