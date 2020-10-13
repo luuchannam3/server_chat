@@ -24,7 +24,7 @@ avatargroup_test:
   before_script:
     - npm install
   script:
-    - npm run avatargroup_test
+    - npm run avatagroup_test
   when: manual
 conversation_test:
   image: harbor.zinza.com.vn/medical/chat/socket-server
