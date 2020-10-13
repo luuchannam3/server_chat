@@ -3,10 +3,9 @@ import { Schema, model } from 'mongoose';
 
 const GroupSchema = new Schema(
   {
-    _id: { type: String, required: true, unique: true },
+    _id: { type: String},
     id_user: { type: String },
     avatarGroup: { type: String },
-    created: { type: Date ,default: Date.now},
     description: { type: String },
     members: [
       {
@@ -21,6 +20,7 @@ const GroupSchema = new Schema(
       },
     ],
     nameGroup: { type: String },
+    created: { type: Date ,default: Date.now}
   },
   {
     collection: 'Group',

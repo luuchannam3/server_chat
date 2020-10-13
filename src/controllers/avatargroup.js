@@ -2,9 +2,10 @@ import statusCode from '../constant/statusCode';
 import logger from '../config/winston';
 import multer from 'multer'
 import Conversation from '../models/conversation'
-
-export async function UploadImage(req, res) {
+import Group from '../models/group'
+function UploadImage(req, res) {
   try {
+    res.header('Content-Type', 'application/javascript');
     const conversation_id = req.query.conversation_id
     var filename,path
     var diskStorage = multer.diskStorage({
@@ -13,6 +14,7 @@ export async function UploadImage(req, res) {
       },
       filename: (req, file, cb) => {
         var math = ["image/png", "image/jpeg"];
+        console.log(file)
         if (math.indexOf(file.mimetype) === -1) {
           res.status(statusCode.BAD_REQUEST).json({ 
             error: "The file is invalid"
@@ -35,9 +37,13 @@ export async function UploadImage(req, res) {
         req.file
       );
       path=req.file.path
-      console.log(path)
+      // console.log(path)
       Conversation.findOne({ _id: conversation_id }, function (err, doc) {
         doc.url = path
+        doc.save();
+      });
+      Group.findOne({ _id: conversation_id }, function (err, doc) {
+        doc.avatarGroup = path
         doc.save();
       });
     });
@@ -48,4 +54,5 @@ export async function UploadImage(req, res) {
       error: 'Bad Request',
     });
   }
-}
+};
+export default {UploadImage};

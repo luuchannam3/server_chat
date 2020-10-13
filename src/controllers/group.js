@@ -4,34 +4,35 @@ import logger from '../config/winston';
 import Group from '../models/group';
 import user from '../models/user';
 import Conversation from '../models/conversation'
+import Group_Chat from '../models/group_chat'
 
 function makeid(length) {
-  let text = '';
-  const possible =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-
-  for (let i = 0; i < length; i++) {
-    text += possible.charAt(Math.floor(Math.random() * possible.length));
+  var result = '';
+  var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  var charactersLength = characters.length;
+  for (var i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
   }
-
-  return text;
+  return result;
 }
 
-
-export async function GetGroup(req, res) {
+function GetGroup(req, res) {
   try {
-    const { group_id } = req.query;
-    console.log(group_id);
-
-    let listGroup;
-
+    const group_id = req.query.group_id;
+    var query
     if (group_id != undefined) {
-      listGroup = await Group.find({ _id: group_id }).sort('created');
+      query = Group.find({ _id: group_id }).sort('created');
+      query.exec((err, groups) => {
+        if (err) res.send(err);
+        res.status(statusCode.OK).json({ groups });
+      });
     } else {
-      listGroup = await Group.find({}).sort('created');
+      query = Group.find({}).sort('created');
+      query.exec((err, groups) => {
+        if (err) res.send(err);
+        res.status(statusCode.OK).json({ groups });
+      });
     }
-
-    res.status(statusCode.OK).json({ listGroup });
   } catch (error) {
     logger.error(`GET /api/v1/group ${error}`);
 
@@ -40,18 +41,18 @@ export async function GetGroup(req, res) {
     });
   }
 }
-
-export async function CreateGroup(req, res) {
+// loi
+function CreateGroup(req, res) {
   try {
     let id;
     let check = true;
     // create group_id
-    while (check) {
       id = '-' + makeid(19).toString();
-      let temp = await Group.findOne({ _id: id });
-      console.log({ temp });
-      if (!temp) check = false;
-    }
+      let temp = Group.find({ _id: id });
+      temp.exec((err, groups) => {
+        if (err) check = false;
+        check = true;
+      });
     // create new group
     console.log('create');
     const avatarGroup = req.body.avatarGroup;
@@ -59,7 +60,6 @@ export async function CreateGroup(req, res) {
     const nameGroup = req.body.nameGroup;
     const members = req.body.members;
     const user_id = req.query.user_id;
-    console.log(user_id)
 
     const group1 = new Group({
       _id: id,
@@ -70,7 +70,9 @@ export async function CreateGroup(req, res) {
       nameGroup: nameGroup
     });
 
-    await group1.save();
+    group1.save((err) => {
+      if (err) console.log(err)
+    });
 
     // create new conversation
     const conversation = new Conversation({
@@ -86,6 +88,16 @@ export async function CreateGroup(req, res) {
       if (err) console.log(err)
     })
 
+    // create new Group_Chat
+    const group_chat=new Group_Chat({
+      id_Conversation: id,
+      Content: "Hello",
+      isImage: false,
+      isSender: user_id
+    })
+    group_chat.save((err)=>{
+      if(err) console.log(err)
+    })
     res.status(statusCode.OK).json({ group1 });
   } catch (error) {
     logger.error(`POST /api/v1/group ${error}`);
@@ -95,8 +107,8 @@ export async function CreateGroup(req, res) {
     });
   }
 }
-
-export async function AddUserToGroup(req, res) {
+//
+function AddUserToGroup(req, res) {
   try {
     const group_id = req.query.group_id;
     const member = req.body
@@ -126,33 +138,41 @@ export async function AddUserToGroup(req, res) {
   }
 }
 
-export async function DeleteUserInGroup(req, res) {
+function DeleteUserInGroup(req, res) {
   try {
     const group_id = req.query.group_id;
     const user_id = req.query.user_id;
     const member_id = req.query.member_id;
+    var group
     if (group_id != undefined && user_id != undefined && member_id != undefined) {
-      const group = await Group.findOne({ _id: group_id }).exec()
-      if (user_id == group.id_user) {
-        // delete user in group
-        Group.update({ _id: group_id, id_user: user_id }, { "$pull": { "members": { "id": member_id } } }, { safe: true, multi: true }, function (err, obj) {
-        });
-      }
-      else {
-        res.status(statusCode.BAD_REQUEST).json({
-          error: 'you cannot delete',
-        })
-        return
-      }
+      group = Group.findOne({ _id: group_id });
+      var id
+      group.exec((err, groups) => {
+        if (err) res.send(err);
+        id=groups.id_user
+        if (user_id == id) {
+          // delete user in group
+          Group.updateOne({ _id: group_id, id_user: user_id }, { "$pull": { "members": { "id": member_id } } }, { safe: true, multi: true }, function (err, obj) {
+          });
+          res.status(statusCode.OK).json({
+            member_id: member_id,
+            group_id: group_id
+          });
+        }
+        else {
+          res.status(statusCode.BAD_REQUEST).json({
+            error: 'you cannot delete',
+          })
+          return
+        }
+      });
+      // console.log(id)
     }
     else {
       res.status(statusCode.BAD_REQUEST).json({
         error: 'you cannot delete',
       })
-      return
     }
-
-    res.status(statusCode.OK).json({ member_id: member_id });
   } catch (error) {
     logger.error(`Delete /api/v1/group ${error}`);
 
@@ -161,3 +181,4 @@ export async function DeleteUserInGroup(req, res) {
     });
   }
 }
+export default { GetGroup, CreateGroup, AddUserToGroup, DeleteUserInGroup };

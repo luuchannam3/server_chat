@@ -1,0 +1,82 @@
+# This file is a template, and might need editing before it works on your project.
+stages:
+    - build
+    - test
+    # - deploy
+  docker-build-master:
+    # Official docker image.
+    image: docker:latest
+    stage: build
+    services:
+      - docker:dind
+    before_script:
+      - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    script:
+      - docker build -t harbor.zinza.com.vn/namlc/socket-server .
+      - docker push harbor.zinza.com.vn/namlc/socket-server
+  avatargroup_test:
+  #   image: node:8.11-alpine
+    image: harbor.zinza.com.vn/namlc/socket-server
+    stage: test
+    services:
+      - mongo:4.2.0-bionic
+    variables:
+      MONGO_URI: 'mongodb://mongodb:27017/Medical'
+    before_script:
+      - npm install
+    script:
+      - npm run avatargroup_test
+    when: manual
+  conversation_test:
+    #   image: node:8.11-alpine
+    image: harbor.zinza.com.vn/namlc/socket-server
+    stage: test
+    services:
+      - mongo:4.2.0-bionic
+    variables:
+      MONGO_URI: 'mongodb://mongodb:27017/Medical'
+    before_script:
+      - npm install
+    script:
+      - npm run conversation_test
+    when: manual
+  friend_test:
+    #   image: node:8.11-alpine
+    image: harbor.zinza.com.vn/namlc/socket-server
+    stage: test
+    services:
+      - mongo:4.2.0-bionic
+    variables:
+      MONGO_URI: 'mongodb://mongodb:27017/Medical'
+    before_script:
+      - npm install
+    script:
+      - npm run friend_test
+    when: manual
+  group_test:
+    #   image: node:8.11-alpine
+    image: harbor.zinza.com.vn/namlc/socket-server
+    stage: test
+    services:
+      - mongo:4.2.0-bionic
+    variables:
+      MONGO_URI: 'mongodb://mongodb:27017/Medical'
+    before_script:
+      - npm install
+    script:
+      - npm run group_test
+    when: manual
+  message_test:
+    #   image: node:8.11-alpine
+    image: harbor.zinza.com.vn/namlc/socket-server
+    stage: test
+    services:
+      - mongo:4.2.0-bionic
+    variables:
+      MONGO_URI: 'mongodb://mongodb:27017/Medical'
+    before_script:
+      - npm install
+    script:
+      - npm run message_test
+    when: manual
+  

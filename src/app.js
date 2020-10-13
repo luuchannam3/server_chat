@@ -3,13 +3,11 @@ import express from 'express';
 import Redis from 'ioredis';
 import config from './config/main.js';
 import logger from './config/winston';
-import UserAPIV1Routes from './routes/api/v1/user';
-import AddressAPIV1Routes from './routes/api/v1/address';
-import AvatarGroupAPIV1Routes from './routes/api/v1/avatargroup'
-import FriendAPIV1Routes from './routes/api/v1/friend'
-import MessageAPIV1Routes from './routes/api/v1/message'
-import GroupAPIV1Routes from './routes/api/v1/group'
-import ConversationAPIV1Routes from './routes/api/v1/conversation'
+import Friend from './controllers/friend'
+import Conversation from './controllers/conversation'
+import Group from './controllers/group'
+import AvatarGroup from './controllers/avatargroup'
+import Message from './controllers/message'
 import multer from 'multer'
 import bodyParser from 'body-parser'
 import path from 'path'
@@ -50,23 +48,41 @@ export const client = new Redis({
   port: config.REDIS.PORT,
 });
 app.use('/jquery',express.static(path.join(__dirname+'/node_modules/jquery/dist/')));
-// app.use(express.json());
-// app.use(express.urlencoded({ extended: false }));
+
 app.use(express.static('src'));
 app.use('/public',express.static('public'));
 
 app.set('views','./src');
 app.set('view engine', 'ejs');
 
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());                                     
+app.use(bodyParser.urlencoded({extended: true}));               
+app.use(bodyParser.text());                                    
+app.use(bodyParser.json({ type: 'application/json'}));  
 
-app.use('/api/v1/user', UserAPIV1Routes);
-app.use('/api/v1/address', AddressAPIV1Routes);
-app.use('/api/v1/avatargroup', AvatarGroupAPIV1Routes)
-app.use('/api/v1/friend',FriendAPIV1Routes)
-app.use('/api/v1/message',MessageAPIV1Routes)
-app.use('/api/v1/group',GroupAPIV1Routes)
-app.use('/api/v1/conversation',ConversationAPIV1Routes)
+
+app.route('/api/v1/friend')
+  .get(Friend.GetFriend)
+  .post(Friend.AddFriend)
+  .delete(Friend.DeleteFriend);
+
+app.route('/api/v1/conversation')
+  .get(Conversation.GetConversation);
+
+app.route('/api/v1/group')
+  .get(Group.GetGroup)
+  .post(Group.CreateGroup)
+  .put(Group.AddUserToGroup)
+  .delete(Group.DeleteUserInGroup)
+
+app.route('/api/v1/avatargroup')
+  .post(AvatarGroup.UploadImage)
+
+app.route('/api/v1/message')
+  .get(Message.PostMessage)
+
+app.route('/api/v1/getMessage')
+  .get(Message.GetMessage)
+// app.use('/api/v1/address', AddressAPIV1Routes);
 
 export default app;

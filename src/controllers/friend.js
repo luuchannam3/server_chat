@@ -6,19 +6,26 @@ import user from '../models/user';
 import Conversation from '../models/conversation'
 import Private_Chat from '../models/private_chat'
 
-export async function GetFriend(req, res) {
+function GetFriend(req, res) {
   try {
     const user_id = req.query.user_id
-
-    let listFriend;
-
+    var query
     if (user_id != undefined) {
-      listFriend = await Friend.find({ _id: user_id }).exec()
+      query = Friend.find({_id: user_id});
+      query.exec((err, friends) => {
+        if(err) res.send(err);
+        res.status(statusCode.OK).json({friends});
+      });
+      // console.log(query)
     } else {
-      listFriend = await Friend.find({}).exec()
+      query = Friend.find({});
+      query.exec((err, friends) => {
+        if(err) res.send(err);
+        res.status(statusCode.OK).json({friends});
+      });
+      // console.log(query)
     }
-
-    res.status(statusCode.OK).json({ listFriend });
+    // res.status(statusCode.OK).json(query);
   } catch (error) {
     logger.error(`GET /api/v1/friend ${error}`);
 
@@ -28,7 +35,7 @@ export async function GetFriend(req, res) {
   }
 }
 
-export async function AddFriend(req, res) {
+function AddFriend(req, res) {
   try {
     const user_id = req.query.user_id
     const friend_id = req.query.friend_id
@@ -87,7 +94,7 @@ export async function AddFriend(req, res) {
         if (err) console.log(err)
       })
     }
-
+    console.log(friend1)
     res.status(statusCode.OK).json({ friend1 });
   } catch (error) {
     logger.error(`POST /api/v1/friend ${error}`);
@@ -98,7 +105,7 @@ export async function AddFriend(req, res) {
   }
 }
 
-export async function DeleteFriend(req, res) {
+function DeleteFriend(req, res) {
   try {
     const user_id = req.query.user_id
     const friend_id = req.query.friend_id
@@ -107,7 +114,7 @@ export async function DeleteFriend(req, res) {
 
     if (user_id != undefined && friend_id != undefined) {
       // delete friend
-      Friend.update({ _id: user_id }, { "$pull": { "friend": { "_id": friend_id } } }, { safe: true, multi: true }, function (err, obj) {
+      Friend.updateOne({ _id: user_id }, { "$pull": { "friend": { "_id": friend_id } } }, { safe: true, multi: true }, function (err, obj) {
       });
       //get conversationid
       var conversationId = ''
@@ -123,11 +130,11 @@ export async function DeleteFriend(req, res) {
         id2 = friend_id
       }
       // delete conversation
-      Conversation.remove({ _id: conversationId }, (err) => {
+      Conversation.deleteOne({ _id: conversationId }, (err) => {
 
       })
       // delete message
-      Private_Chat.remove({ id_Conversation: conversationId }, (err) => {
+      Private_Chat.deleteOne({ id_Conversation: conversationId }, (err) => {
 
       })
     }
@@ -141,3 +148,4 @@ export async function DeleteFriend(req, res) {
     });
   }
 }
+export default {GetFriend, AddFriend, DeleteFriend};

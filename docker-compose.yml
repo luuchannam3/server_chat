@@ -4,7 +4,6 @@ services:
     container_name: api_socket_server
     build: .
     command: yarn dev
-    # command: sh -c "dockerize -wait tcp://zookeeper:2181 -wait tcp://kafka:9092 -wait tcp://database:27017 yarn dev"
     ports:
       - 5000:5000
     volumes:
@@ -21,6 +20,8 @@ services:
       REDIS_USER: 'redis_user'
       MONGO_URI: 'mongodb://mongodb:27017/Medical'
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    networks: 
+      - common
 
   mongodb:
     container_name: mongodb
@@ -67,26 +68,7 @@ services:
     container_name: kafka
     networks:
       - common
-    
-  consumer:
-    build: ../consumer
-    container_name: consumer
-    # command: sh -c "dockerize -wait tcp://zookeeper:2181 -wait tcp://kafka:9092 -wait tcp://database:27017 yarn dev"
-    command: yarn dev
-    depends_on:
-      - zookeeper
-      - kafka
-      - mongodb
-    environment:
-      REDIS_HOST: 'rediscache'
-      REDIS_PORT: '6379'
-      REDIS_USER: 'redis_user'
-      MONGO_URI: 'mongodb://mongodb:27017/Medical'
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-    volumes:
-      - ../consumer:/app
-    networks: 
-      - common
-
+  
 networks:
   common:
+    driver: bridge

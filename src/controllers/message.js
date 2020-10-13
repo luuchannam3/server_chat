@@ -20,7 +20,7 @@ function distinguish(str) {
         else return false
     }
 }
-export async function GetMessage(req, res) {
+function PostMessage(req, res) {
     try {
         const id_sender = req.query.id_sender
         const conversation_id = req.query.conversation_id
@@ -29,14 +29,25 @@ export async function GetMessage(req, res) {
         console.log(conversation_id)
         if (id_sender != undefined && conversation_id != undefined) {
             var result = distinguish(conversation_id)
+            var query
             if (result == true) {
-                listMessage = await Private_Chat.find({id_Conversation: conversation_id}).sort('time').skip((page - 1) * 20).limit(20 * page)
+                // listMessage = await Private_Chat.find({id_Conversation: conversation_id}).sort('time').skip((page - 1) * 20).limit(20 * page)
+                query = Private_Chat.find({id_Conversation: conversation_id}).sort('time').skip((page - 1) * 20).limit(20 * page);
+                query.exec((err, listMessage) => {
+                  if(err) res.send(err);
+                  res.render('index1',{id_sender: id_sender,conversation_id:conversation_id, listMessage: listMessage});
+                });
             }
             else {
-                listMessage = await Group_Chat.find({id_Conversation: conversation_id}).sort('time').skip((page - 1) * 20).limit(20 * page)
+                // listMessage = await Group_Chat.find({id_Conversation: conversation_id}).sort('time').skip((page - 1) * 20).limit(20 * page)
+                query = Group_Chat.find({id_Conversation: conversation_id}).sort('time').skip((page - 1) * 20).limit(20 * page);
+                query.exec((err, listMessage) => {
+                  if(err) res.send(err);
+                  res.render('index1',{id_sender: id_sender,conversation_id:conversation_id, listMessage: listMessage});
+                });
             }
         }
-        res.render('index1',{id_sender: id_sender,conversation_id:conversation_id, listMessage: listMessage});
+        // res.render('index1',{id_sender: id_sender,conversation_id:conversation_id, listMessage: listMessage});
     } catch (error) {
         logger.error(`GET /api/v1/message ${error}`);
 
@@ -45,3 +56,39 @@ export async function GetMessage(req, res) {
         });
     }
 }
+function GetMessage(req, res) {
+    try {
+        const id_sender = req.query.id_sender
+        const conversation_id = req.query.conversation_id
+        const page = req.query.page
+        let listMessage;
+        console.log(conversation_id)
+        if (id_sender != undefined && conversation_id != undefined) {
+            var result = distinguish(conversation_id)
+            var query
+            if (result == true) {
+                query = Private_Chat.find({id_Conversation: conversation_id}).sort('time').skip((page - 1) * 20).limit(20 * page);
+                query.exec((err, listMessage) => {
+                  if(err) res.send(err);
+                    res.status(statusCode.OK).json({listMessage})
+                //   res.render('index1',{id_sender: id_sender,conversation_id:conversation_id, listMessage: listMessage});
+                });
+            }
+            else {
+                query = Group_Chat.find({id_Conversation: conversation_id}).sort('time').skip((page - 1) * 20).limit(20 * page);
+                query.exec((err, listMessage) => {
+                  if(err) res.send(err);
+                  res.status(statusCode.OK).json({listMessage})
+                //   res.render('index1',{id_sender: id_sender,conversation_id:conversation_id, listMessage: listMessage});
+                });
+            }
+        }
+    } catch (error) {
+        logger.error(`GET /api/v1/message ${error}`);
+
+        res.status(statusCode.BAD_REQUEST).json({
+            error: 'Bad Request',
+        });
+    }
+}
+export default {PostMessage, GetMessage};
