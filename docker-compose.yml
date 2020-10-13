@@ -15,9 +15,6 @@ services:
       - kafka
       - mongodb
     environment:
-      REDIS_HOST: 'rediscache'
-      REDIS_PORT: '6379'
-      REDIS_USER: 'redis_user'
       MONGO_URI: 'mongodb://mongodb:27017/Medical'
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
     networks: 
@@ -30,16 +27,6 @@ services:
       - 27017:27017
     volumes:
       - ./db:/data/db
-    networks:
-      - common
-
-  rediscache:
-    container_name: rediscache
-    image: redis:5-alpine
-    ports:
-      - 6379:6379
-    volumes:
-      - ./volumes/redis:/data
     networks:
       - common
 

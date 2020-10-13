@@ -43,10 +43,6 @@ mongoose.connect(config.MONGO_URI, {
   useUnifiedTopology: true,
 });
 
-export const client = new Redis({
-  host: config.REDIS.HOST,
-  port: config.REDIS.PORT,
-});
 app.use('/jquery',express.static(path.join(__dirname+'/node_modules/jquery/dist/')));
 
 app.use(express.static('src'));
@@ -83,6 +79,5 @@ app.route('/api/v1/message')
 
 app.route('/api/v1/getMessage')
   .get(Message.GetMessage)
-// app.use('/api/v1/address', AddressAPIV1Routes);
 
 export default app;
