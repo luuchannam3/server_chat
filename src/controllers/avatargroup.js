@@ -21,7 +21,6 @@ function UploadImage(req, res) {
           })
           return;
         }
-
         filename = `${Date.now()}-${conversation_id}`;
         cb(null, filename);
       }
@@ -37,7 +36,7 @@ function UploadImage(req, res) {
         req.file
       );
       path=req.file.path
-      // console.log(path)
+      console.log(path)
       Conversation.findOne({ _id: conversation_id }, function (err, doc) {
         doc.url = path
         doc.save();

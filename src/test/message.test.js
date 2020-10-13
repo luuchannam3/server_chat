@@ -12,8 +12,7 @@ require("babel-polyfill");
 describe('conversation', () => {
     it('GET', (done) => {
         chai.request(server)
-            .get('/api/v1/getMessage?conversation_id=11110001035-11110001054&id_sender=11110001054')
-            //   .send({user_id:'11110001053'})
+            .get('/api/v1/getMessage?conversation_id=CT00000001-11110001388&id_sender=11110001388')
             .end((err, res) => {
                 res.should.have.status(200);
                 res.body.should.be.a('object');

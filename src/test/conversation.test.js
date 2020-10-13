@@ -3,17 +3,31 @@ import chaiHttp from 'chai-http'
 import server from '../app'
 import fs from 'fs'
 import supertest from 'supertest'
+import Conversation from '../models/conversation'
 var should = chai.should()
 chai.use(require('chai-like'));
 chai.use(require('chai-things'));
 chai.use(chaiHttp)
 require("babel-core/register");
 require("babel-polyfill");
+var id1="CT00000001"
+var id2= "11110001388"
+const conversation = new Conversation({
+    _id: 'CT00000001-11110001388',
+    lm: `Xin chào`,
+    url: '',
+    type: 0,
+    name: '',
+    listviewer: [],
+    members: [id1, id2],
+})
+conversation.save((err) => {
+    if (err) console.log(err)
+})
 describe('conversation', () => {
     it('GET', (done) => {
         chai.request(server)
-            .get('/api/v1/conversation?conversation_id=11110001035-11110001054&user_id=11110001035')
-            //   .send({user_id:'11110001053'})
+            .get('/api/v1/conversation?conversation_id=CT00000001-11110001388&user_id=11110001388')
             .end((err, res) => {
                 res.should.have.status(200);
                 res.body.should.be.a('object');

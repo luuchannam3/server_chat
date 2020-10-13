@@ -5,6 +5,7 @@ import fs from 'fs'
 import supertest from 'supertest'
 
 var should = chai.should()
+var group_id
 chai.use(require('chai-like'));
 chai.use(require('chai-things'));
 chai.use(chaiHttp)
@@ -29,7 +30,8 @@ describe('group', () => {
                     "token": "test token 1"
                 }
             ],
-            "nameGroup": "test nameGroup"
+            "nameGroup": "test nameGroup",
+            "id_user": "CT00000001"
         }
         chai.request(server)
             .post('/api/v1/group?user_id=CT00000001')
@@ -41,6 +43,8 @@ describe('group', () => {
                 res.should.be.json;
                 // console.log(res.body)
                 res.body.should.have.property('group1');
+                group_id=res.body.group1._id
+                console.log(group_id)
                 res.body.group1.should.have.property('_id');
                 res.body.group1.should.have.property('id_user');
                 res.body.group1.should.have.property('avatarGroup');
@@ -60,9 +64,10 @@ describe('group', () => {
     });
     it('GET group', (done) => {
         chai.request(server)
-            .get('/api/v1/group?group_id=-qjBbcNFaIQVWRtR5qcy')
+            .get('/api/v1/group?group_id='+group_id)
             .end((err, res) => {
                 res.should.have.status(200);
+                console.log(group_id)
                 res.body.should.be.a('object');
                 res.should.be.json;
                 res.body.should.have.property('groups')
@@ -93,7 +98,7 @@ describe('group', () => {
             "token": "test add token"
         }
         chai.request(server)
-            .put('/api/v1/group?group_id=-qjBbcNFaIQVWRtR5qcy')
+            .put('/api/v1/group?group_id='+group_id)
             .type('form')
             .send(test)
             .end((err, res) => {
@@ -109,8 +114,9 @@ describe('group', () => {
     });
     it('DEL: delete member in group', (done) => {
         chai.request(server)
-            .delete('/api/v1/group?group_id=-qjBbcNFaIQVWRtR5qcy&user_id=CT56556998&member_id=11110001388')
+            .delete('/api/v1/group?group_id='+group_id+'&user_id=CT00000001&member_id=11110001388')
             .end((err, res) => {
+                console.log(group_id)
                 res.should.have.status(200);
                 res.body.should.be.a('object');
                 res.should.be.json;

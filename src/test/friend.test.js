@@ -3,18 +3,32 @@ import chaiHttp from 'chai-http'
 import server from '../app'
 import fs from 'fs'
 import supertest from 'supertest'
-
+import Friend from '../models/friend'
 var should = chai.should()
 chai.use(require('chai-like'));
 chai.use(require('chai-things'));
 chai.use(chaiHttp)
 require("babel-core/register");
 require("babel-polyfill");
+const friend = new Friend({
+    _id: '00000000000',
+    friend: [
+        {
+          _id: "11110001388",
+          adress: "test friend address",
+          imageurl: "test friend imageurl",
+          username: "test friend username"
+        }
+      ]
+})
+friend.save((err) => {
+    if (err) console.log(err)
+})
 describe('friend', () => {
     it('GET friend', (done) => {
         chai.request(server)
             .get('/api/v1/friend')
-            .send({ user_id: '11110001053' })
+            .send({ user_id: '00000000000' })
             .end((err, res) => {
                 res.should.have.status(200);
                 res.body.should.be.a('object');
@@ -40,7 +54,7 @@ describe('friend', () => {
             "username": "test username"
         }
         chai.request(server)
-            .post('/api/v1/friend?user_id=11110001053&friend_id=11110000002')
+            .post('/api/v1/friend?user_id=00000000000&friend_id=11110000002')
             .type('form')
             .send(test)
             .end((err, res) => {
@@ -58,7 +72,7 @@ describe('friend', () => {
     });
     it('DEL: delete friend', (done) => {
         chai.request(server)
-            .delete('/api/v1/friend?user_id=11110001053&friend_id=11110000002')
+            .delete('/api/v1/friend?user_id=00000000000&friend_id=11110000002')
             .end((err, res) => {
                 res.should.have.status(200);
                 res.body.should.be.a('object');
