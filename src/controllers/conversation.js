@@ -1,7 +1,6 @@
 import statusCode from '../constant/statusCode';
 import logger from '../config/winston';
 import conversation from '../models/conversation';
-import user from '../models/user'
 
 function GetConversation(req, res) {
   try {

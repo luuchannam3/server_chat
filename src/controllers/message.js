@@ -2,7 +2,6 @@
 import statusCode from '../constant/statusCode';
 import logger from '../config/winston';
 import Friend from '../models/friend';
-import user from '../models/user';
 import Conversation from '../models/conversation'
 import Private_Chat from '../models/private_chat'
 import Group_Chat from '../models/group_chat'

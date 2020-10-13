@@ -2,7 +2,6 @@
 import statusCode from '../constant/statusCode';
 import logger from '../config/winston';
 import Group from '../models/group';
-import user from '../models/user';
 import Conversation from '../models/conversation'
 import Group_Chat from '../models/group_chat'
 
