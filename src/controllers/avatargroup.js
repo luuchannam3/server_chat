@@ -53,5 +53,5 @@ function UploadImage(req, res) {
       error: 'Bad Request',
     });
   }
-};
+}
 export default {UploadImage};

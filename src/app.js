@@ -1,6 +1,5 @@
 import mongoose from 'mongoose';
 import express from 'express';
-import Redis from 'ioredis';
 import config from './config/main.js';
 import logger from './config/winston';
 import Friend from './controllers/friend'
@@ -8,10 +7,7 @@ import Conversation from './controllers/conversation'
 import Group from './controllers/group'
 import AvatarGroup from './controllers/avatargroup'
 import Message from './controllers/message'
-import multer from 'multer'
 import bodyParser from 'body-parser'
-import path from 'path'
-import $ from 'jquery';
 
 const app = express();
 
@@ -43,7 +39,8 @@ mongoose.connect(config.MONGO_URI, {
   useUnifiedTopology: true,
 });
 
-app.use('/jquery',express.static(path.join(__dirname+'/node_modules/jquery/dist/')));
+// app.use('/jquery',express.static(path.join(__dirname+'/node_modules/jquery/dist/')));
+app.use('/jquery',express.static('/node_modules/jquery/dist/'));
 
 app.use(express.static('src'));
 app.use('/public',express.static('public'));

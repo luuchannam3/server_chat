@@ -1,9 +1,8 @@
-const http = require('http');
+import http from 'http';
 import socket from 'socket.io';
 import kafka from 'kafka-node'
 import app from './app';
 import type from './models/type'
-import $ from 'jquery';
 import fs from 'fs';
 const server = http.createServer(app);
 
@@ -33,7 +32,8 @@ io.on('connection', (socket) => {
         messages: messageBuffer,
         attributes: 1
       }];
-      kafkaProducer.send(payload, function (error, result) {
+      kafkaProducer.send(payload, function (error) {
+        if(error) throw error
         console.info('Sent payload to Kafka:', payload);
       });
     })
@@ -45,6 +45,7 @@ io.on('connection', (socket) => {
       var path = 'public/message/' + `${Date.now()}-${msg.conversation_id}.${c[1]}`
       console.log(path)
       fs.writeFile('public/message/' + `${Date.now()}-${msg.conversation_id}.${c[1]}`, base64Image, { encoding: 'base64' }, function (err) {
+        if(err) throw err
         console.log('File created');
       });
       socket.broadcast.to(room).emit('base64_file',
@@ -72,7 +73,8 @@ io.on('connection', (socket) => {
         attributes: 1
       }];
 
-      kafkaProducer.send(payload, function (error, result) {
+      kafkaProducer.send(payload, function (error) {
+        if(error) throw error
         console.info('Sent payload to Kafka:', payload);
       });
     });

@@ -44,14 +44,13 @@ function GetGroup(req, res) {
 function CreateGroup(req, res) {
   try {
     let id;
-    let check = true;
     // create group_id
       id = '-' + makeid(19).toString();
-      let temp = Group.find({ _id: id });
-      temp.exec((err, groups) => {
-        if (err) check = false;
-        check = true;
-      });
+      // let temp = Group.find({ _id: id });
+      // temp.exec((err) => {
+      //   if (err) check = false;
+      //   check = true;
+      // });
     // create new group
     console.log('create');
     const avatarGroup = req.body.avatarGroup;
@@ -113,12 +112,17 @@ function AddUserToGroup(req, res) {
     const member = req.body
 
     if (group_id != undefined) {
+      // Group.findOneAndUpdate(
+      //   { _id: group_id },
+      //   { $push: { members: member } },
+      //   { new: true }, (err, result) => {
+
+      //   }
+      // )
       Group.findOneAndUpdate(
         { _id: group_id },
         { $push: { members: member } },
-        { new: true }, (err, result) => {
-
-        }
+        { new: true }
       )
     }
     else {
@@ -151,8 +155,7 @@ function DeleteUserInGroup(req, res) {
         id=groups.id_user
         if (user_id == id) {
           // delete user in group
-          Group.updateOne({ _id: group_id, id_user: user_id }, { "$pull": { "members": { "id": member_id } } }, { safe: true, multi: true }, function (err, obj) {
-          });
+          Group.updateOne({ _id: group_id, id_user: user_id }, { "$pull": { "members": { "id": member_id } } }, { safe: true, multi: true });
           res.status(statusCode.OK).json({
             member_id: member_id,
             group_id: group_id

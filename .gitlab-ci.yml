@@ -1,20 +1,81 @@
 # This file is a template, and might need editing before it works on your project.
 stages:
-  # - build
+  - build
   - test
-    # - deploy
-# docker-build-master:
-#   # Official docker image.
-#   image: docker:latest
-#   stage: build
+  - deploy
+docker-build-master:
+  # Official docker image.
+  image: docker:latest
+  stage: build
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - docker build -t harbor.zinza.com.vn/medical/chat/socket-server .
+    - docker push harbor.zinza.com.vn/medical/chat/socket-server
+  when: manual
+# avatargroup_test:
+#   image: harbor.zinza.com.vn/medical/chat/socket-server
+#   stage: test
 #   services:
-#     - docker:dind
+#     - mongo:4.2.0-bionic
+#   variables:
+#     MONGO_URI: 'mongodb://localhost:27017/Medical'
 #   before_script:
-#     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+#     - npm install
 #   script:
-#     - docker build -t harbor.zinza.com.vn/medical/chat/socket-server .
-#     - docker push harbor.zinza.com.vn/medical/chat/socket-server
-avatargroup_test:
+#     - npm run avatagroup_test
+#   when: manual
+# conversation_test:
+#   image: harbor.zinza.com.vn/medical/chat/socket-server
+#   stage: test
+#   services:
+#     - mongo:4.2.0-bionic
+#   variables:
+#     MONGO_URI: 'mongodb://localhost:27017/Medical'
+#   before_script:
+#     - npm install
+#   script:
+#     - npm run conversation_test
+#   when: manual
+# friend_test:
+#   image: harbor.zinza.com.vn/medical/chat/socket-server
+#   stage: test
+#   services:
+#     - mongo:4.2.0-bionic
+#   variables:
+#     MONGO_URI: 'mongodb://localhost:27017/Medical'
+#   before_script:
+#     - npm install
+#   script:
+#     - npm run friend_test
+#   when: manual
+# group_test:
+#   image: harbor.zinza.com.vn/medical/chat/socket-server
+#   stage: test
+#   services:
+#     - mongo:4.2.0-bionic
+#   variables:
+#     MONGO_URI: 'mongodb://localhost:27017/Medical'
+#   before_script:
+#     - npm install
+#   script:
+#     - npm run group_test
+#   when: manual
+# message_test:
+#   image: harbor.zinza.com.vn/medical/chat/socket-server
+#   stage: test
+#   services:
+#     - mongo:4.2.0-bionic
+#   variables:
+#     MONGO_URI: 'mongodb://localhost:27017/Medical'
+#   before_script:
+#     - npm install
+#   script:
+#     - npm run message_test
+#   when: manual
+test_server:
   image: harbor.zinza.com.vn/medical/chat/socket-server
   stage: test
   services:
@@ -24,53 +85,23 @@ avatargroup_test:
   before_script:
     - npm install
   script:
-    - npm run avatagroup_test
+    - npm run test
+    - npx eslint ./
   when: manual
-conversation_test:
-  image: harbor.zinza.com.vn/medical/chat/socket-server
-  stage: test
+deploy_app:
+  stage: deploy
+  image: alpine:latest
   services:
-    - mongo:4.2.0-bionic
-  variables:
-    MONGO_URI: 'mongodb://localhost:27017/Medical'
+    - docker:dind
   before_script:
-    - npm install
+    - apk add openssh-client
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - eval $(ssh-agent -s)
+    - ssh-add ~/.ssh/id_rsa
+    - ssh-keyscan -H $CI_SSH_SERVER >> ~/.ssh/known_hosts
   script:
-    - npm run conversation_test
-  when: manual
-friend_test:
-  image: harbor.zinza.com.vn/medical/chat/socket-server
-  stage: test
-  services:
-    - mongo:4.2.0-bionic
-  variables:
-    MONGO_URI: 'mongodb://localhost:27017/Medical'
-  before_script:
-    - npm install
-  script:
-    - npm run friend_test
-  when: manual
-group_test:
-  image: harbor.zinza.com.vn/medical/chat/socket-server
-  stage: test
-  services:
-    - mongo:4.2.0-bionic
-  variables:
-    MONGO_URI: 'mongodb://localhost:27017/Medical'
-  before_script:
-    - npm install
-  script:
-    - npm run group_test
-  when: manual
-message_test:
-  image: harbor.zinza.com.vn/medical/chat/socket-server
-  stage: test
-  services:
-    - mongo:4.2.0-bionic
-  variables:
-    MONGO_URI: 'mongodb://localhost:27017/Medical'
-  before_script:
-    - npm install
-  script:
-    - npm run message_test
+    - ssh $CI_SSH_USER@$CI_SSH_SERVER docker-compose -f /home/channam/Desktop/nam/api-socket-server/socket-server/docker-compose.yml down
+    - ssh $CI_SSH_USER@$CI_SSH_SERVER docker-compose -f /home/channam/Desktop/nam/api-socket-server/socket-server/docker-compose.yml up -d
   when: manual

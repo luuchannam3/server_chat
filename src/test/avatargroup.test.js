@@ -1,7 +1,4 @@
-import fs from 'fs'
 import supertest from 'supertest'
-import path from 'path'
-import should from 'should'
 import Group from '../models/group'
 import Conversation from '../models/conversation'
 var server = supertest.agent('http://localhost:5000')

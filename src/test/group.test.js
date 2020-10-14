@@ -1,10 +1,8 @@
-import chai, { expect } from 'chai'
+import chai from 'chai'
 import chaiHttp from 'chai-http'
 import server from '../app'
-import fs from 'fs'
-import supertest from 'supertest'
 
-var should = chai.should()
+chai.should()
 var group_id
 chai.use(require('chai-like'));
 chai.use(require('chai-things'));

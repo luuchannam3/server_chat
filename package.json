@@ -8,11 +8,7 @@
   "scripts": {
     "start": "babel-node src/index.js",
     "dev": "nodemon -e js,ejs,html,json src/index.js --exec babel-node",
-    "avatagroup_test": "mocha -r esm src/test/avatargroup.test.js --exit",
-    "conversation_test": "mocha -r esm src/test/conversation.test.js --exit",
-    "friend_test": "mocha -r esm src/test/friend.test.js --exit",
-    "group_test": "mocha -r esm src/test/group.test.js --exit",
-    "message_test": "mocha -r esm src/test/message.test.js --exit"
+    "test": "set NODE_ENV=test&& nyc --reporter=html --reporter=text mocha -r esm 'src/test/**/*.js' --exit"
   },
   "dependencies": {
     "app-root-path": "^3.0.0",
@@ -57,6 +53,7 @@
     "babel-preset-stage-0": "^6.24.1",
     "babel-register": "^6.26.0",
     "chai": "^4.2.0",
+    "eslint": "^7.11.0",
     "mocha": "^6.2.2",
     "nodemon": "^2.0.1",
     "nyc": "^14.1.1",

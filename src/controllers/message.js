@@ -1,12 +1,8 @@
 // import Group from '../models/group';
 import statusCode from '../constant/statusCode';
 import logger from '../config/winston';
-import Friend from '../models/friend';
-import Conversation from '../models/conversation'
 import Private_Chat from '../models/private_chat'
 import Group_Chat from '../models/group_chat'
-import type from '../models/type'
-import kafka from 'kafka-node'
 
 function distinguish(str) {
     var res = str.split('-')
@@ -24,7 +20,7 @@ function PostMessage(req, res) {
         const id_sender = req.query.id_sender
         const conversation_id = req.query.conversation_id
         const page = req.query.page
-        let listMessage;
+        // let listMessage;
         console.log(conversation_id)
         if (id_sender != undefined && conversation_id != undefined) {
             var result = distinguish(conversation_id)
@@ -60,7 +56,7 @@ function GetMessage(req, res) {
         const id_sender = req.query.id_sender
         const conversation_id = req.query.conversation_id
         const page = req.query.page
-        let listMessage;
+        // let listMessage;
         console.log(conversation_id)
         if (id_sender != undefined && conversation_id != undefined) {
             var result = distinguish(conversation_id)

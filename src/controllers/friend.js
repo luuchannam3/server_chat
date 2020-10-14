@@ -53,7 +53,8 @@ function AddFriend(req, res) {
         { _id: user_id },
         { $push: { friend: { _id: friend_id, adress: adress, imageurl: imageurl, username: username } } },
         { new: true }, (err, result) => {
-
+          if(err) console.log(err)
+          console.log(result)
         }
       )
       // create conversationId
@@ -114,27 +115,24 @@ function DeleteFriend(req, res) {
     if (user_id != undefined && friend_id != undefined) {
       // delete friend
       Friend.updateOne({ _id: user_id }, { "$pull": { "friend": { "_id": friend_id } } }, { safe: true, multi: true }, function (err, obj) {
+        if(err) throw err
+        console.log(obj)
       });
       //get conversationid
       var conversationId = ''
-      var id1 = '', id2 = ''
       if (parseInt(user_id) > parseInt(friend_id)) {
         conversationId = `${friend_id}-${user_id}`
-        id1 = friend_id
-        id2 = user_id
       }
       else {
         conversationId = `${user_id}-${friend_id}`
-        id1 = user_id
-        id2 = friend_id
       }
       // delete conversation
       Conversation.deleteOne({ _id: conversationId }, (err) => {
-
+        if(err) throw err
       })
       // delete message
       Private_Chat.deleteOne({ id_Conversation: conversationId }, (err) => {
-
+        if(err) throw err
       })
     }
 
