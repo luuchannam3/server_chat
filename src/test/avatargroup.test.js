@@ -51,6 +51,7 @@ describe('avatargroup', () => {
             .attach('name', 'Group-icon.png', '../public/group')
             .expect(200)
             .end((err, res) => {
+                console.log(res)
                 done();
             });
     });
