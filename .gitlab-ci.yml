@@ -14,67 +14,6 @@ docker-build-master:
   script:
     - docker build -t harbor.zinza.com.vn/medical/chat/socket-server .
     - docker push harbor.zinza.com.vn/medical/chat/socket-server
-  when: manual
-# avatargroup_test:
-#   image: harbor.zinza.com.vn/medical/chat/socket-server
-#   stage: test
-#   services:
-#     - mongo:4.2.0-bionic
-#   variables:
-#     MONGO_URI: 'mongodb://localhost:27017/Medical'
-#   before_script:
-#     - npm install
-#   script:
-#     - npm run avatagroup_test
-#   when: manual
-# conversation_test:
-#   image: harbor.zinza.com.vn/medical/chat/socket-server
-#   stage: test
-#   services:
-#     - mongo:4.2.0-bionic
-#   variables:
-#     MONGO_URI: 'mongodb://localhost:27017/Medical'
-#   before_script:
-#     - npm install
-#   script:
-#     - npm run conversation_test
-#   when: manual
-# friend_test:
-#   image: harbor.zinza.com.vn/medical/chat/socket-server
-#   stage: test
-#   services:
-#     - mongo:4.2.0-bionic
-#   variables:
-#     MONGO_URI: 'mongodb://localhost:27017/Medical'
-#   before_script:
-#     - npm install
-#   script:
-#     - npm run friend_test
-#   when: manual
-# group_test:
-#   image: harbor.zinza.com.vn/medical/chat/socket-server
-#   stage: test
-#   services:
-#     - mongo:4.2.0-bionic
-#   variables:
-#     MONGO_URI: 'mongodb://localhost:27017/Medical'
-#   before_script:
-#     - npm install
-#   script:
-#     - npm run group_test
-#   when: manual
-# message_test:
-#   image: harbor.zinza.com.vn/medical/chat/socket-server
-#   stage: test
-#   services:
-#     - mongo:4.2.0-bionic
-#   variables:
-#     MONGO_URI: 'mongodb://localhost:27017/Medical'
-#   before_script:
-#     - npm install
-#   script:
-#     - npm run message_test
-#   when: manual
 test_server:
   image: harbor.zinza.com.vn/medical/chat/socket-server
   stage: test
@@ -87,7 +26,6 @@ test_server:
   script:
     - npm run test
     - npx eslint ./
-  when: manual
 deploy_app:
   stage: deploy
   image: alpine:latest
@@ -104,4 +42,3 @@ deploy_app:
   script:
     - ssh $CI_SSH_USER@$CI_SSH_SERVER docker-compose -f /home/channam/Desktop/nam/api-socket-server/socket-server/docker-compose.yml down
     - ssh $CI_SSH_USER@$CI_SSH_SERVER docker-compose -f /home/channam/Desktop/nam/api-socket-server/socket-server/docker-compose.yml up -d
-  when: manual
