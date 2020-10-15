@@ -100,10 +100,7 @@ deploy_app:
     - chmod 600 ~/.ssh/id_rsa
     - eval $(ssh-agent -s)
     - ssh-add ~/.ssh/id_rsa
-    # - echo "$CI_SSH_SERVER" >> ~/.ssh/known_hosts
-    # - ssh-keyscan -H $CI_SSH_SERVER >> ~/.ssh/known_hosts
-    # - chmod 644 ~/.ssh/known_hosts
-    - ping $CI_SSH_SERVER
+    - ssh-keyscan -H $CI_SSH_SERVER >> ~/.ssh/known_hosts
   script:
     - ssh $CI_SSH_USER@$CI_SSH_SERVER docker-compose -f /home/channam/Desktop/nam/api-socket-server/socket-server/docker-compose.yml down
     - ssh $CI_SSH_USER@$CI_SSH_SERVER docker-compose -f /home/channam/Desktop/nam/api-socket-server/socket-server/docker-compose.yml up -d
