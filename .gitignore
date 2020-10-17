@@ -8,8 +8,6 @@
 
 # production
 /build
-/public/group
-/public/message
 # misc
 .DS_Store
 .env.local
