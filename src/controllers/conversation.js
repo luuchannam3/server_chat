@@ -1,47 +1,29 @@
+import { Conversation } from 'models-common';
 import statusCode from '../constant/statusCode';
 import logger from '../config/winston';
-import conversation from '../models/conversation';
+import ConversationType from '../constant/converstation';
 
-function GetConversation(req, res) {
+/**
+ * query params
+ * uid: get list conversation.mems contains userId
+ * page: pagination for query
+ */
+async function GetConversation(req, res) {
   try {
-    console.log(req.query)
-    const user_id = req.query.user_id
-    let page = req.query.page
-    const conversation_id = req.query.conversation_id
-    // Default Rows And Pages
-    if (page === undefined) {
-      page = 1;
-    }
-    // console.log(user_id)
+    const { uid } = req.query;
+    const page = req.query.page || 1;
 
-    // let listConversation;
-    // console.log(listConversation)
-    var query
-    if (user_id != undefined && conversation_id === undefined) {
-      // listConversation = conversation.find({ "members": user_id }).sort('updateAt').skip((page - 1) * 20).limit(20)
-      query = conversation.find({members: user_id}).sort('updateAt').skip((page - 1) * 20).limit(20);
-      query.exec((err, listConversation) => {
-        if(err) res.send(err);
-        res.status(statusCode.OK).json({listConversation});
-      });
-    } else if (conversation_id != undefined) {
-      // listConversation = conversation.find({ _id: conversation_id }).sort('updateAt');
-      query = conversation.find({ _id: conversation_id}).sort('updateAt');
-      query.exec((err, listConversation) => {
-        if(err) res.send(err);
-        res.status(statusCode.OK).json({listConversation});
+    if (!uid) {
+      return res.status(statusCode.BAD_REQUEST).json({
+        error: 'Invalid params',
       });
     }
-    else{
-      // listConversation = conversation.find({}).sort('updateAt');
-      query = conversation.find({}).sort('updateAt');
-      query.exec((err, listConversation) => {
-        if(err) res.send(err);
-        res.status(statusCode.OK).json({listConversation});
-      });
-    }
-    // console.log(listConversation)
-    // return res.status(statusCode.OK).json({ listConversation });
+
+    const cons = await Conversation.find({ mems: uid }).sort('updatedAt').skip((page - 1) * 20).limit(20);
+
+    return res.status(statusCode.OK).json({
+      cons,
+    });
   } catch (error) {
     logger.error(`GET /api/v1/conversation ${error}`);
 
@@ -50,4 +32,72 @@ function GetConversation(req, res) {
     });
   }
 }
-export default {GetConversation};
+
+/**
+ * get list conversation by userId
+ */
+async function GetGroupConversationByUserId(uid) {
+  const cons = await Conversation.find({ mems: uid, type: ConversationType.GROUP_CHAT }).sort('updatedAt');
+
+  return cons;
+}
+
+/**
+ * socket event create_conversation
+ * ava,
+ * type: 1. private chat, 2. group chat
+ * name: conversation name
+ * mems: array contains user.id
+ */
+async function CreateConversation(io, socket, data) {
+  try {
+    const {
+      type,
+      name,
+      mems,
+      ava,
+    } = data;
+
+    // valids params
+    if (!mems || !name || mems.length < 2 || mems[0] !== socket.uid) {
+      return io.to(socket.uid).emit('create_conversation', {
+        err: 'Invalid params',
+      });
+    }
+
+    // TODO call HTTP to APS.NET for validate friend is exited
+    // TODO validate user can create group
+
+    const con = new Conversation({
+      ava: ava || 'TODO default ava',
+      type: type === ConversationType.PRIVATE_CHAT ? ConversationType.PRIVATE_CHAT : ConversationType.GROUP_CHAT,
+      name,
+      mems,
+    });
+
+    await con.save();
+
+    const promises = [];
+
+    for (let i = 0; i < mems.length; i++) {
+      const isOnline = true;
+      if (isOnline) {
+        promises.push(io.to(mems[i]).emit('create_conversation', {
+          data: { con },
+        }));
+      } else {
+        // TODO push notification
+      }
+    }
+
+    await Promise.all(promises);
+  } catch (error) {
+    logger.error(`Error socket event create_conversation ${error}`);
+
+    io.to(socket.uid).emit('create_conversation', {
+      err: 'TODO error when create conversation',
+    });
+  }
+}
+
+export default { GetConversation, CreateConversation, GetGroupConversationByUserId };

@@ -1,4 +1,4 @@
-FROM node:10-alpine
+FROM node:12.19-alpine
 
 WORKDIR /app
 
@@ -12,9 +12,9 @@ RUN apk add --no-cache openssl \
 RUN apk add --no-cache bash bash-doc bash-completion
 
 RUN apk add --no-cache --virtual .gyp \
-        python \
-        make \
-        g++ \
+    python \
+    make \
+    g++ \
     && npm install \
     && apk del .gyp
 

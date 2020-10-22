@@ -1,30 +1,35 @@
-import chai from 'chai'
-import chaiHttp from 'chai-http'
-import server from '../app'
-chai.should()
-chai.use(require('chai-like'));
-chai.use(require('chai-things'));
-chai.use(chaiHttp)
-require("babel-core/register");
-require("babel-polyfill");
-describe('conversation', () => {
-    it('GET', (done) => {
-        chai.request(server)
-            .get('/api/v1/getMessage?conversation_id=CT00000001-11110001388&id_sender=11110001388')
-            .end((err, res) => {
-                res.should.have.status(200);
-                res.body.should.be.a('object');
-                res.should.be.json;
-                res.body.should.have.property('listMessage')
-                for (let i = 0; i < res.body.listMessage.length; i++) {
-                    res.body.listMessage[i].should.have.property('isImage');
-                    res.body.listMessage[i].should.have.property('_id');
-                    res.body.listMessage[i].should.have.property('id_Conversation');
-                    res.body.listMessage[i].should.have.property('Content');
-                    res.body.listMessage[i].should.have.property('isSender');
-                    res.body.listMessage[i].should.have.property('time');
-                }
-                done();
-            });
-    });
+/* eslint-disable no-underscore-dangle */
+import supertest from 'supertest';
+import { expect } from 'chai';
+import app from '../app';
+import { ResetDB, SetUpDB } from './config';
+
+const agent = supertest(app);
+
+describe('Message API', () => {
+  let cid;
+  let mid;
+  before(async () => {
+    await ResetDB();
+    const res = await SetUpDB();
+    cid = res.cid;
+    mid = res.mid;
+  });
+
+  after(async () => {
+    await ResetDB();
+  });
+
+  it('invalid params', async () => {
+    const res = await agent.get('/api/v1/message');
+    expect(res.body).to.have.property('error');
+    expect(res.body.error).to.eql('Invalid params');
+  });
+
+  it('get message by cid', async () => {
+    const res = await agent.get(`/api/v1/message?cid=${cid}`);
+    expect(res.body).to.have.property('messages');
+    expect(res.body.messages.length).to.eql(1);
+    expect(res.body.messages[0]._id).to.eql(mid);
+  });
 });

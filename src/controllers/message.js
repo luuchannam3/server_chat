@@ -1,89 +1,98 @@
-// import Group from '../models/group';
+import { Conversation, Message } from 'models-common';
 import statusCode from '../constant/statusCode';
 import logger from '../config/winston';
-import Private_Chat from '../models/private_chat'
-import Group_Chat from '../models/group_chat'
+import ConversationType from '../constant/converstation';
 
-function distinguish(str) {
-    var res = str.split('-')
-    if (res.length != 2) return false
-    else {
-        var str1 = res[0].substring(2, res[0].length)
-        var str2 = res[1].substring(2, res[1].length)
-        var reg = new RegExp(/^[0-9]*$/)
-        if (reg.test(str1) == true && reg.test(str2) == true) return true
-        else return false
+/**
+ * socket event send_message
+ * cid: converation_id
+ * ruid: id of user will received message or group_id
+ * type: message type 1. text, 2. image
+ * content: content message or image path
+ */
+async function SendMessage(io, socket, data) {
+  const {
+    cid,
+    ruid,
+    type,
+    content,
+  } = data;
+  try {
+    console.log('receive data', data);
+    // validate params
+    if (!ruid || !type || !content) {
+      return io.to(socket.uid).emit('send_message', {
+        err: 'Invalid params',
+      });
     }
-}
-function PostMessage(req, res) {
-    try {
-        const id_sender = req.query.id_sender
-        const conversation_id = req.query.conversation_id
-        const page = req.query.page
-        // let listMessage;
-        console.log(conversation_id)
-        if (id_sender != undefined && conversation_id != undefined) {
-            var result = distinguish(conversation_id)
-            var query
-            if (result == true) {
-                // listMessage = await Private_Chat.find({id_Conversation: conversation_id}).sort('time').skip((page - 1) * 20).limit(20 * page)
-                query = Private_Chat.find({id_Conversation: conversation_id}).sort('time').skip((page - 1) * 20).limit(20 * page);
-                query.exec((err, listMessage) => {
-                  if(err) res.send(err);
-                  res.render('index1',{id_sender: id_sender,conversation_id:conversation_id, listMessage: listMessage});
-                });
-            }
-            else {
-                // listMessage = await Group_Chat.find({id_Conversation: conversation_id}).sort('time').skip((page - 1) * 20).limit(20 * page)
-                query = Group_Chat.find({id_Conversation: conversation_id}).sort('time').skip((page - 1) * 20).limit(20 * page);
-                query.exec((err, listMessage) => {
-                  if(err) res.send(err);
-                  res.render('index1',{id_sender: id_sender,conversation_id:conversation_id, listMessage: listMessage});
-                });
-            }
-        }
-        // res.render('index1',{id_sender: id_sender,conversation_id:conversation_id, listMessage: listMessage});
-    } catch (error) {
-        logger.error(`GET /api/v1/message ${error}`);
+    // check cid exit
+    let con = await Conversation.findById(cid);
 
-        res.status(statusCode.BAD_REQUEST).json({
-            error: 'Bad Request',
-        });
-    }
-}
-function GetMessage(req, res) {
-    try {
-        const id_sender = req.query.id_sender
-        const conversation_id = req.query.conversation_id
-        const page = req.query.page
-        // let listMessage;
-        console.log(conversation_id)
-        if (id_sender != undefined && conversation_id != undefined) {
-            var result = distinguish(conversation_id)
-            var query
-            if (result == true) {
-                query = Private_Chat.find({id_Conversation: conversation_id}).sort('time').skip((page - 1) * 20).limit(20 * page);
-                query.exec((err, listMessage) => {
-                  if(err) res.send(err);
-                    res.status(statusCode.OK).json({listMessage})
-                //   res.render('index1',{id_sender: id_sender,conversation_id:conversation_id, listMessage: listMessage});
-                });
-            }
-            else {
-                query = Group_Chat.find({id_Conversation: conversation_id}).sort('time').skip((page - 1) * 20).limit(20 * page);
-                query.exec((err, listMessage) => {
-                  if(err) res.send(err);
-                  res.status(statusCode.OK).json({listMessage})
-                //   res.render('index1',{id_sender: id_sender,conversation_id:conversation_id, listMessage: listMessage});
-                });
-            }
-        }
-    } catch (error) {
-        logger.error(`GET /api/v1/message ${error}`);
+    if (!con) {
+      // create new conversation
+      con = new Conversation({
+        mems: [socket.uid, ruid],
+        type: ConversationType.PRIVATE_CHAT,
+      });
 
-        res.status(statusCode.BAD_REQUEST).json({
-            error: 'Bad Request',
-        });
+      await con.save();
     }
+
+    const mess = new Message({
+      content,
+      type,
+      cid: con.id,
+      uid: socket.uid,
+    });
+
+    await mess.save();
+
+    io.to(ruid).emit('send_message', {
+      data: {
+        mess,
+      },
+    });
+
+    con.lm = mess.id;
+
+    await con.save();
+  } catch (error) {
+    logger.error(`Error socket event send_message ${error}`);
+    io.to(socket.uid).emit('send_message', {
+      err: 'TODO error when send message',
+    });
+  }
 }
-export default {PostMessage, GetMessage};
+
+/**
+ * GetMessage by icd
+ * query params
+ * cid: conversation_id
+ * page: pagination
+ */
+async function GetMessage(req, res) {
+  try {
+    const { cid } = req.query;
+    const page = req.query.page || 1;
+
+    if (!cid) {
+      return res.status(statusCode.BAD_REQUEST).json({
+        error: 'Invalid params',
+      });
+    }
+
+    const messages = await Message.find({ cid }).sort('updatedAt').skip((page - 1) * 20).limit(20);
+
+    return res.status(statusCode.OK).json({
+      messages,
+    });
+  } catch (error) {
+    logger.error(`Error socket event send_message ${error}`);
+
+    res.status(statusCode.BAD_REQUEST).json({
+      error: 'Bad Request',
+    });
+  }
+}
+
+export default { SendMessage, GetMessage };
