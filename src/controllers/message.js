@@ -1,64 +1,98 @@
-// import Group from '../models/group';
+import { Conversation, Message } from 'models-common';
 import statusCode from '../constant/statusCode';
 import logger from '../config/winston';
-import message from '../models/message';
-import user from '../models/user';
+import ConversationType from '../constant/converstation';
 
-export async function GetMessage(req, res) {
+/**
+ * socket event send_message
+ * cid: converation_id
+ * ruid: id of user will received message or group_id
+ * type: message type 1. text, 2. image
+ * content: content message or image path
+ */
+async function SendMessage(io, socket, data) {
+  const {
+    cid,
+    ruid,
+    type,
+    content,
+  } = data;
   try {
-    const { group_id } = req.query;
-    console.log(group_id)
+    console.log('receive data', data);
+    // validate params
+    if (!ruid || !type || !content) {
+      return io.to(socket.uid).emit('send_message', {
+        err: 'Invalid params',
+      });
+    }
+    // check cid exit
+    let con = await Conversation.findById(cid);
 
-    let listMessage;
+    if (!con) {
+      // create new conversation
+      con = new Conversation({
+        mems: [socket.uid, ruid],
+        type: ConversationType.PRIVATE_CHAT,
+      });
 
-    if (group_id != undefined) {
-      listMessage = await message.find({_id: group_id}).sort('create');
-    } else {
-      listMessage = await message.find({}).sort('create');
+      await con.save();
     }
 
-    res.status(statusCode.OK).json({ listGroup });
-  } catch (error) {
-    logger.error(`GET /api/v1/group ${error}`);
+    const mess = new Message({
+      content,
+      type,
+      cid: con.id,
+      uid: socket.uid,
+    });
 
-    res.status(statusCode.BAD_REQUEST).json({
-      error: 'Bad Request',
+    await mess.save();
+
+    io.to(ruid).emit('send_message', {
+      data: {
+        mess,
+      },
+    });
+
+    con.lm = mess.id;
+
+    await con.save();
+  } catch (error) {
+    logger.error(`Error socket event send_message ${error}`);
+    io.to(socket.uid).emit('send_message', {
+      err: 'TODO error when send message',
     });
   }
 }
 
-export async function AddMessage(req, res) {
+/**
+ * GetMessage by icd
+ * query params
+ * cid: conversation_id
+ * page: pagination
+ */
+async function GetMessage(req, res) {
   try {
-    const avatarGroup = req.body.avatarGroup
-    const created= req.body.created
-    const description = req.body.description
-    const nameGroup = req.body.nameGroup
-    const member = req.body.member
-    const user_id=req.query
-    // const admin=req.body.admin
-    console.log(member)
-    // console.log(typeof member)
-    const group1 = new group({
-      _id: "2",
-      avatarGroup: avatarGroup,
-      created: created,
-      description: description,
-      // admin: admin,
-      member: member,
-      nameGroup: nameGroup
-    })
-    console.log(group1)
-    group1.save(function (err) {
-      // if (err) console.log(err)
-      // saved!
+    const { cid } = req.query;
+    const page = req.query.page || 1;
+
+    if (!cid) {
+      return res.status(statusCode.BAD_REQUEST).json({
+        error: 'Invalid params',
+      });
+    }
+
+    const messages = await Message.find({ cid }).sort('updatedAt').skip((page - 1) * 20).limit(20);
+
+    return res.status(statusCode.OK).json({
+      messages,
     });
-    
-    res.status(statusCode.OK).json({ group1 });
   } catch (error) {
-    logger.error(`POST /api/v1/group ${error}`);
+    logger.error(`Error socket event send_message ${error}`);
 
     res.status(statusCode.BAD_REQUEST).json({
       error: 'Bad Request',
     });
   }
 }
+
+export default { SendMessage, GetMessage };

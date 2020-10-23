@@ -1,22 +1,22 @@
 version: '3.4'
 services:
-  api_socket_server:
-    container_name: api_socket_server
-    build: .
-    command: yarn dev
-    ports:
-      - 5000:5000
-    volumes:
-      - .:/app
-    networks:
-      - common
-    depends_on: 
-      - kafka
-    environment: 
-      REDIS_HOST: 'rediscache'
-      REDIS_PORT: '6379'
-      REDIS_USER: 'redis_user'
-      MONGO_URI : 'mongodb://mongodb:27017/Medical'
+  # api_socket_server:
+  #   container_name: api_socket_server
+  #   build: .
+  #   command: yarn dev
+  #   ports:
+  #     - 5000:5000
+  #   volumes:
+  #     - .:/app
+  #   networks:
+  #     - common
+  #   depends_on:
+  #     - zookeeper
+  #     - kafka
+  #     - mongodb
+  #   environment:
+  #     MONGO_URI: 'mongodb://mongodb:27017/Medical'
+  #     KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
 
   mongodb:
     container_name: mongodb
@@ -24,32 +24,22 @@ services:
     ports:
       - 27017:27017
     volumes:
-      - ./db/db:/data/db
-    networks:
-      - common
-
-  rediscache:
-    container_name: rediscache
-    image: redis:5-alpine
-    ports:
-      - 6379:6379
-    volumes:
-      - ./volumes/redis:/data
+      - ./db:/data/db
     networks:
       - common
 
   zookeeper:
     image: wurstmeister/zookeeper:latest
     ports:
-      - "2181:2181"
+      - 2181:2181
     container_name: zookeeper
-    networks: 
+    networks:
       - common
-    
+
   kafka:
     image: wurstmeister/kafka:2.11-1.1.1
     ports:
-      - "9092:9092"
+      - 9092:9092
     links:
       - zookeeper
     environment:
@@ -57,13 +47,24 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
       KAFKA_DELETE_TOPIC_ENABLE: 'true'
-      KAFKA_CREATE_TOPICS: "topic-test:1:1"
+      KAFKA_CREATE_TOPICS: 'topic-test:1:1'
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     container_name: kafka
-    networks: 
+    networks:
       - common
-    
 
+  redis:
+    container_name: redis
+    image: redis:6-alpine
+    ports:
+      - 6379:6379
+    volumes:
+      - ./volumes/redis:/data
+    networks:
+      - common
+
+  
 networks:
   common:
+    driver: bridge

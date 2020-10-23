@@ -1,64 +1,82 @@
-// import Group from '../models/group';
-import statusCode from '../constant/statusCode';
+import { Conversation } from 'models-common';
 import logger from '../config/winston';
-import group from '../models/group';
-import user from '../models/user';
 
-export async function GetGroup(req, res) {
+/**
+ * socket event add_user_to_group
+ * cid: group chat's conversation_id
+ * uid: user request add user to group
+ * newUserId: new user who will add to group
+ */
+async function AddUserToGroup(io, socket, data) {
   try {
-    const { group_id } = req.query;
-    console.log(group_id)
+    const { cid, uid, newUserId } = data;
+    // check group is exited
+    const con = await Conversation.findById(cid);
+    const { mems } = con;
 
-    let listGroup;
-
-    if (group_id != undefined) {
-      listGroup = await group.find({_id: group_id}).sort('create');
-    } else {
-      listGroup = await Group.find({}).sort('create');
+    // check roles user
+    if (mems[0] !== uid) {
+      return io.to(uid).emit('add_user_to_group', {
+        err: 'TODO You can not add new user to group',
+      });
     }
 
-    res.status(statusCode.OK).json({ listGroup });
-  } catch (error) {
-    logger.error(`GET /api/v1/group ${error}`);
+    await Conversation.findByIdAndUpdate(
+      { _id: cid },
+      { $push: { members: newUserId } },
+      { new: true },
+    );
 
-    res.status(statusCode.BAD_REQUEST).json({
-      error: 'Bad Request',
+    return io.to(cid).emit('add_user_to_group', {
+      msg: 'TODO New user was added to your group',
+    });
+  } catch (error) {
+    logger.error(`Error socket event add_user_to_group ${error}`);
+
+    io.to(socket.uid).emit('add_user_to_group', {
+      err: 'TODO error when add new user to group',
     });
   }
 }
 
-export async function CreateGroup(req, res) {
+/**
+ * socket event remove_user_in_group
+ * cid: group chat's conversation_id
+ * uid: user request remove user in group,
+ * removeUserId: user who will remove in group
+ */
+async function RemoveUserInGroup(io, socket, data) {
   try {
-    const avatarGroup = req.body.avatarGroup
-    const created= req.body.created
-    const description = req.body.description
-    const nameGroup = req.body.nameGroup
-    const member = req.body.member
-    const user_id=req.query
-    // const admin=req.body.admin
-    console.log(member)
-    // console.log(typeof member)
-    const group1 = new group({
-      _id: "2",
-      avatarGroup: avatarGroup,
-      created: created,
-      description: description,
-      // admin: admin,
-      member: member,
-      nameGroup: nameGroup
-    })
-    console.log(group1)
-    group1.save(function (err) {
-      // if (err) console.log(err)
-      // saved!
-    });
-    
-    res.status(statusCode.OK).json({ group1 });
-  } catch (error) {
-    logger.error(`POST /api/v1/group ${error}`);
+    const { cid, uid, removeUserId } = data;
+    // check group is exited
+    const con = await Conversation.findById(cid);
+    const { mems } = con;
 
-    res.status(statusCode.BAD_REQUEST).json({
-      error: 'Bad Request',
+    // check roles user
+    if (mems[0] !== uid) {
+      return io.to(uid).emit('remove_user_in_group', {
+        msg: 'TODO You can not add new user to group',
+      });
+    }
+
+    await Conversation.updateOne(
+      { _id: cid },
+      { $pull: { members: { id: removeUserId } } },
+      { safe: true, multi: true },
+    );
+
+    return io.to(cid).emit('remove_user_in_group', {
+      msg: 'TODO Remove user in group',
+    });
+  } catch (error) {
+    logger.error(`Error socket event remove_user_in_group ${error}`);
+
+    io.to(socket.userId).emit('remove_user_in_group', {
+      msg: 'TODO error when remove user in group',
     });
   }
 }
+
+export default {
+  AddUserToGroup, RemoveUserInGroup,
+};

@@ -1,26 +1,29 @@
-// import Group from '../models/group';
+import { Conversation } from 'models-common';
 import statusCode from '../constant/statusCode';
 import logger from '../config/winston';
-import conversation from '../models/conversation';
-import user from '../models/user';
+import ConversationType from '../constant/converstation';
 
-export async function GetConversation(req, res) {
+/**
+ * query params
+ * uid: get list conversation.mems contains userId
+ * page: pagination for query
+ */
+async function GetConversation(req, res) {
   try {
-    const user_id= req.query.user_id
-    const page = req.query.page
-    const row = req.query.row
+    const { uid } = req.query;
+    const page = req.query.page || 1;
 
-    console.log(user_id)
-
-    let listConversation;
-
-    if (user_id != undefined) {
-      listConversation = await conversation.find({}).sort('create');
-    } else {
-      listGroup = await conversation.find({}).sort('create');
+    if (!uid) {
+      return res.status(statusCode.BAD_REQUEST).json({
+        error: 'Invalid params',
+      });
     }
 
-    res.status(statusCode.OK).json({ listConversation });
+    const cons = await Conversation.find({ mems: uid }).sort('updatedAt').skip((page - 1) * 20).limit(20);
+
+    return res.status(statusCode.OK).json({
+      cons,
+    });
   } catch (error) {
     logger.error(`GET /api/v1/conversation ${error}`);
 
@@ -30,38 +33,71 @@ export async function GetConversation(req, res) {
   }
 }
 
-export async function CreateGroup(req, res) {
-  try {
-    const avatarGroup = req.body.avatarGroup
-    const created= req.body.created
-    const description = req.body.description
-    const nameGroup = req.body.nameGroup
-    const member = req.body.member
-    const user_id=req.query
-    // const admin=req.body.admin
-    console.log(member)
-    // console.log(typeof member)
-    const group1 = new group({
-      _id: "2",
-      avatarGroup: avatarGroup,
-      created: created,
-      description: description,
-      // admin: admin,
-      member: member,
-      nameGroup: nameGroup
-    })
-    console.log(group1)
-    group1.save(function (err) {
-      // if (err) console.log(err)
-      // saved!
-    });
-    
-    res.status(statusCode.OK).json({ group1 });
-  } catch (error) {
-    logger.error(`POST /api/v1/group ${error}`);
+/**
+ * get list conversation by userId
+ */
+async function GetGroupConversationByUserId(uid) {
+  const cons = await Conversation.find({ mems: uid, type: ConversationType.GROUP_CHAT }).sort('updatedAt');
 
-    res.status(statusCode.BAD_REQUEST).json({
-      error: 'Bad Request',
+  return cons;
+}
+
+/**
+ * socket event create_conversation
+ * ava,
+ * type: 1. private chat, 2. group chat
+ * name: conversation name
+ * mems: array contains user.id
+ */
+async function CreateConversation(io, socket, data) {
+  try {
+    const {
+      type,
+      name,
+      mems,
+      ava,
+    } = data;
+
+    // valids params
+    if (!mems || !name || mems.length < 2 || mems[0] !== socket.uid) {
+      return io.to(socket.uid).emit('create_conversation', {
+        err: 'Invalid params',
+      });
+    }
+
+    // TODO call HTTP to APS.NET for validate friend is exited
+    // TODO validate user can create group
+
+    const con = new Conversation({
+      ava: ava || 'TODO default ava',
+      type: type === ConversationType.PRIVATE_CHAT ? ConversationType.PRIVATE_CHAT : ConversationType.GROUP_CHAT,
+      name,
+      mems,
+    });
+
+    await con.save();
+
+    const promises = [];
+
+    for (let i = 0; i < mems.length; i++) {
+      const isOnline = true;
+      if (isOnline) {
+        promises.push(io.to(mems[i]).emit('create_conversation', {
+          data: { con },
+        }));
+      } else {
+        // TODO push notification
+      }
+    }
+
+    await Promise.all(promises);
+  } catch (error) {
+    logger.error(`Error socket event create_conversation ${error}`);
+
+    io.to(socket.uid).emit('create_conversation', {
+      err: 'TODO error when create conversation',
     });
   }
 }
+
+export default { GetConversation, CreateConversation, GetGroupConversationByUserId };
