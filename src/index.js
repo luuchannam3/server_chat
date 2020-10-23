@@ -1,8 +1,6 @@
 import http from 'http';
 import socketIO from 'socket.io';
-import kafka from 'kafka-node';
 import app, { client } from './app';
-import config from './config/main';
 import ConversationController from './controllers/conversation';
 import MessageController from './controllers/message';
 import GroupController from './controllers/group';
@@ -11,13 +9,6 @@ import FriendController from './controllers/friend';
 const server = http.createServer(app);
 
 export const io = socketIO(server);
-
-const kafkaClientOptions = { sessionTimeout: 100, spinDelay: 100, retries: 2 };
-const kafkaClient = new kafka.KafkaClient(config.KAFKA_HOST, 'producer-client', kafkaClientOptions);
-const kafkaProducer = new kafka.HighLevelProducer(kafkaClient);
-
-kafkaClient.on('error', (error) => console.error('Kafka client error:', error));
-kafkaProducer.on('error', (error) => console.error('Kafka producer error:', error));
 
 io.use(async (socket, next) => {
   const { uid } = socket.handshake.query;

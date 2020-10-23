@@ -2,6 +2,8 @@ import { Conversation, Message } from 'models-common';
 import statusCode from '../constant/statusCode';
 import logger from '../config/winston';
 import ConversationType from '../constant/converstation';
+import { producer } from '../config/kafka';
+import config from '../config/main';
 
 /**
  * socket event send_message
@@ -35,7 +37,13 @@ async function SendMessage(io, socket, data) {
         type: ConversationType.PRIVATE_CHAT,
       });
 
-      await con.save();
+      // await con.save();
+      await producer.send({
+        topic: config.KAFKA_TOPIC_CONVERSATION,
+        messages: [
+          { key: 'new_conversation', value: JSON.stringify(con) },
+        ],
+      });
     }
 
     const mess = new Message({
@@ -45,7 +53,14 @@ async function SendMessage(io, socket, data) {
       uid: socket.uid,
     });
 
-    await mess.save();
+    // await mess.save();
+
+    await producer.send({
+      topic: config.KAFKA_TOPIC_MESSAGE,
+      messages: [
+        { key: 'new_message', value: JSON.stringify(mess) },
+      ],
+    });
 
     io.to(ruid).emit('send_message', {
       data: {
@@ -55,7 +70,14 @@ async function SendMessage(io, socket, data) {
 
     con.lm = mess.id;
 
-    await con.save();
+    // await con.save();
+
+    await producer.send({
+      topic: config.KAFKA_TOPIC_CONVERSATION,
+      messages: [
+        { key: 'update_lm_conversation', value: JSON.stringify(con) },
+      ],
+    });
   } catch (error) {
     logger.error(`Error socket event send_message ${error}`);
     io.to(socket.uid).emit('send_message', {

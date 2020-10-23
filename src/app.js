@@ -8,6 +8,7 @@ import logger from './config/winston';
 import Conversation from './controllers/conversation';
 import AvatarGroup from './controllers/upload_img';
 import Message from './controllers/message';
+import { producer } from './config/kafka';
 
 const app = express();
 
@@ -44,6 +45,8 @@ mongoose.connect(config.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
+
+producer.connect();
 
 app.use('/public', express.static('public'));
 
