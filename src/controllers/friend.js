@@ -1,6 +1,8 @@
 import { Conversation } from 'models-common';
 import logger from '../config/winston';
 import TypeConversation from '../constant/converstation';
+import { producer } from '../config/kafka';
+import config from '../config/main';
 
 /**
  * socket event add_friend
@@ -24,7 +26,13 @@ async function AddFriend(io, socket, data) {
       mems: [uid, fid],
     });
 
-    await con.save();
+    // await con.save();
+    await producer.send({
+      topic: config.KAFKA_TOPIC_CONVERSATION,
+      messages: [
+        { key: 'add_friend', value: JSON.stringify(con) },
+      ],
+    });
 
     const promises = [
       io.to(socket.uid).emit('add_friend', {

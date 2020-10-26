@@ -2,6 +2,8 @@ import { Conversation } from 'models-common';
 import statusCode from '../constant/statusCode';
 import logger from '../config/winston';
 import ConversationType from '../constant/converstation';
+import { producer } from '../config/kafka';
+import config from '../config/main';
 
 /**
  * query params
@@ -75,7 +77,14 @@ async function CreateConversation(io, socket, data) {
       mems,
     });
 
-    await con.save();
+    // await con.save();
+
+    await producer.send({
+      topic: config.KAFKA_TOPIC_CONVERSATION,
+      messages: [
+        { key: 'create_conversation', value: JSON.stringify(con) },
+      ],
+    });
 
     const promises = [];
 

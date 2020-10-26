@@ -1,22 +1,24 @@
 version: '3.4'
 services:
-  # api_socket_server:
-  #   container_name: api_socket_server
-  #   build: .
-  #   command: yarn dev
-  #   ports:
-  #     - 5000:5000
-  #   volumes:
-  #     - .:/app
-  #   networks:
-  #     - common
-  #   depends_on:
-  #     - zookeeper
-  #     - kafka
-  #     - mongodb
-  #   environment:
-  #     MONGO_URI: 'mongodb://mongodb:27017/Medical'
-  #     KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+  api_socket_server:
+    container_name: api_socket_server
+    command: yarn dev
+    ports:
+      - 5000:5000
+    build: 
+      context: .
+      dockerfile: ./docker/app/Dockerfile.prod
+    volumes:
+      - .:/app
+    networks:
+      - common
+    depends_on:
+      - zookeeper
+      - kafka
+      - mongodb
+    environment:
+      MONGO_URI: 'mongodb://mongodb:27017/Medical'
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
 
   mongodb:
     container_name: mongodb
@@ -40,14 +42,14 @@ services:
     image: wurstmeister/kafka:2.11-1.1.1
     ports:
       - 9092:9092
-    links:
+    depends_on:
       - zookeeper
     environment:
       KAFKA_ADVERTISED_HOST_NAME: kafka
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
       KAFKA_DELETE_TOPIC_ENABLE: 'true'
-      KAFKA_CREATE_TOPICS: 'topic-test:1:1'
+      KAFKA_CREATE_TOPICS: 'topic_message,topic_conversation'
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     container_name: kafka
