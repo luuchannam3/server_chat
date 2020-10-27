@@ -5,30 +5,50 @@ import ConversationController from './controllers/conversation';
 import MessageController from './controllers/message';
 import GroupController from './controllers/group';
 import FriendController from './controllers/friend';
+import { GetUserData } from './config/axios';
+import config from './config/main';
+import logger from './config/winston';
 
 const server = http.createServer(app);
 
 export const io = socketIO(server);
 
 io.use(async (socket, next) => {
-  const { uid } = socket.handshake.query;
-  // eslint-disable-next-line no-param-reassign
-  socket.uid = uid;
-  console.log(`User connected ${uid}`);
+  try {
+    const { token } = socket.handshake.query;
+    if (!token) {
+      return next('unauthorized');
+    }
 
-  // set online to redis
-  client.set(`${uid}_online`, 1);
+    const user = await GetUserData(token);
 
-  const cons = await ConversationController.GetGroupConversationByUserId(uid);
+    if (!user) {
+      return next('invalid token');
+    }
 
-  // join chanel
-  socket.join(uid);
-  for (let i = 0; i < cons.length; i++) {
-    console.log('prepare join', cons[i].id);
-    socket.join(cons[i].id);
+    const uid = user.id;
+
+    // eslint-disable-next-line no-param-reassign
+    socket.uid = uid;
+    console.log(`User connected ${uid}`);
+
+    // set online to redis
+    await client.set(`${uid}_online`, 1);
+
+    const cons = await ConversationController.GetGroupConversationByUserId(uid);
+
+    // join chanel
+    socket.join(uid);
+    for (let i = 0; i < cons.length; i++) {
+      console.log('prepare join', cons[i].id);
+      socket.join(cons[i].id);
+    }
+
+    return next();
+  } catch (e) {
+    logger.error(e);
+    return next('unauthorized');
   }
-
-  next();
 });
 
 io.on('connection', (socket) => {
@@ -51,6 +71,22 @@ io.on('connection', (socket) => {
   socket.on('add_friend', (data) => {
     FriendController.AddFriend(io, socket, data);
   });
+
+  socket.on('disconnect', async () => {
+    const { uid } = socket;
+    const cons = await ConversationController.GetGroupConversationByUserId(uid);
+
+    // leave chanel
+    socket.leave(uid);
+    for (let i = 0; i < cons.length; i++) {
+      socket.leave(cons[i].id);
+    }
+
+    // set offline in redis
+    await client.del(`${uid}_online`);
+
+    console.log(`disconnect ${uid}`);
+  });
 });
 
-server.listen(3000, () => console.log('Server is start on *:5000'));
+server.listen(config.PORT, () => console.log(`Server is start on *:${config.PORT}`));

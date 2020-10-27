@@ -1579,10 +1579,10 @@ avsc@^5.4.22:
   resolved "https://registry.yarnpkg.com/avsc/-/avsc-5.5.2.tgz#996ac89300ba8ec7f48c099d25909934ee373205"
   integrity sha512-ADkdb9T5KhRRIzbRZ2Pj1f+SMILDnihgbqlksbJcbHpnyNYCAJDa4RCG6o5AT4uktW2noRRvSF7DTrkE4Z4z4A==
 
-axios@^0.20.0:
-  version "0.20.0"
-  resolved "https://registry.yarnpkg.com/axios/-/axios-0.20.0.tgz#057ba30f04884694993a8cd07fa394cff11c50bd"
-  integrity sha512-ANA4rr2BDcmmAQLOKft2fufrtuvlqR+cXNNinUmvfeSNCOF98PZL+7M/v1zIdGo7OLjEA9J2gXJL+j4zGsl0bA==
+axios@^0.21.0:
+  version "0.21.0"
+  resolved "https://registry.yarnpkg.com/axios/-/axios-0.21.0.tgz#26df088803a2350dff2c27f96fef99fe49442aca"
+  integrity sha512-fmkJBknJKoZwem3/IKSSLpkdNXZeBu5Q7GA/aRsr2btgrptmSCxi2oFjZHqGdK9DoTil9PIHlPIZw2EcRJXRvw==
   dependencies:
     follow-redirects "^1.10.0"
 
@@ -5250,7 +5250,7 @@ mocha@^6.2.2:
 
 "models-common@git+ssh://git@lab.zinza.com.vn:2468/Medical/chat/models-common.git":
   version "1.0.0"
-  resolved "git+ssh://git@lab.zinza.com.vn:2468/Medical/chat/models-common.git#872e14faa3e8b627c40b02809c9ae6405c9665d0"
+  resolved "git+ssh://git@lab.zinza.com.vn:2468/Medical/chat/models-common.git#670e3fe04380004a57c1a039057a4bdc942ebdf3"
   dependencies:
     mongoose "^5.10.3"
 

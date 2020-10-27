@@ -91,25 +91,36 @@ async function SendMessage(io, socket, data) {
  * query params
  * cid: conversation_id
  * page: pagination
+ * uid: user_01_id,user_02_id
  */
 async function GetMessage(req, res) {
   try {
-    const { cid } = req.query;
+    let { cid, uid } = req.query;
     const page = req.query.page || 1;
 
-    if (!cid) {
+    if (!cid && !uid) {
       return res.status(statusCode.BAD_REQUEST).json({
         error: 'Invalid params',
       });
     }
 
-    const messages = await Message.find({ cid }).sort('updatedAt').skip((page - 1) * 20).limit(20);
+    if (!cid) {
+      uid = uid.split(',');
+      const con = await Conversation.findOne({ mems: { $all: uid }, type: ConversationType.PRIVATE_CHAT });
+      cid = con ? con.id : '';
+    }
+
+    const messages = await Message.find({ cid })
+      .sort('updatedAt')
+      .skip((page - 1) * 20)
+      .limit(20)
+      .populate('uid');
 
     return res.status(statusCode.OK).json({
       messages,
     });
   } catch (error) {
-    logger.error(`Error socket event send_message ${error}`);
+    logger.error(`api GET /api/v1/messages ${error}`);
 
     res.status(statusCode.BAD_REQUEST).json({
       error: 'Bad Request',
