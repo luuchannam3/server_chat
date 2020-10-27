@@ -2,14 +2,14 @@
 import statusCode from '../constant/statusCode';
 import logger from '../config/winston';
 import Group from '../models/group';
-import Conversation from '../models/conversation'
-import Group_Chat from '../models/group_chat'
+import Conversation from '../models/conversation';
+import GroupChat from '../models/group_chat';
 
 function makeid(length) {
-  var result = '';
-  var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  var charactersLength = characters.length;
-  for (var i = 0; i < length; i++) {
+  let result = '';
+  let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let charactersLength = characters.length;
+  for (let i = 0; i < length; i++) {
     result += characters.charAt(Math.floor(Math.random() * charactersLength));
   }
   return result;
@@ -17,10 +17,10 @@ function makeid(length) {
 
 function GetGroup(req, res) {
   try {
-    const group_id = req.query.group_id;
-    var query
-    if (group_id != undefined) {
-      query = Group.find({ _id: group_id }).sort('created');
+    const groupId = req.query.groupId;
+    let query;
+    if (groupId != undefined) {
+      query = Group.find({ _id: groupId }).sort('created');
       query.exec((err, groups) => {
         if (err) res.send(err);
         res.status(statusCode.OK).json({ groups });
@@ -44,24 +44,18 @@ function GetGroup(req, res) {
 function CreateGroup(req, res) {
   try {
     let id;
-    // create group_id
+    // create groupId
       id = '-' + makeid(19).toString();
-      // let temp = Group.find({ _id: id });
-      // temp.exec((err) => {
-      //   if (err) check = false;
-      //   check = true;
-      // });
-    // create new group
     console.log('create');
     const avatarGroup = req.body.avatarGroup;
     const description = req.body.description;
     const nameGroup = req.body.nameGroup;
     const members = req.body.members;
-    const user_id = req.query.user_id;
+    const userId = req.query.userId;
 
     const group1 = new Group({
       _id: id,
-      id_user: user_id,
+      id_user: userId,
       avatarGroup: avatarGroup,
       description: description,
       members: members,
@@ -69,7 +63,7 @@ function CreateGroup(req, res) {
     });
 
     group1.save((err) => {
-      if (err) console.log(err)
+      if (err) console.log(err);
     });
 
     // create new conversation
@@ -81,21 +75,21 @@ function CreateGroup(req, res) {
       name: nameGroup,
       listviewer: [],
       members: members
-    })
+    });
     conversation.save((err) => {
-      if (err) console.log(err)
-    })
+      if (err) console.log(err);
+    });
 
-    // create new Group_Chat
-    const group_chat=new Group_Chat({
+    // create new GroupChat
+    const groupChat=new GroupChat({
       id_Conversation: id,
       Content: "Hello",
       isImage: false,
-      isSender: user_id
-    })
-    group_chat.save((err)=>{
-      if(err) console.log(err)
-    })
+      isSender: userId
+    });
+    groupChat.save((err)=>{
+      if(err) console.log(err);
+    });
     res.status(statusCode.OK).json({ group1 });
   } catch (error) {
     logger.error(`POST /api/v1/group ${error}`);
@@ -108,27 +102,20 @@ function CreateGroup(req, res) {
 //
 function AddUserToGroup(req, res) {
   try {
-    const group_id = req.query.group_id;
-    const member = req.body
+    const groupId = req.query.groupId;
+    const member = req.body;
 
-    if (group_id != undefined) {
-      // Group.findOneAndUpdate(
-      //   { _id: group_id },
-      //   { $push: { members: member } },
-      //   { new: true }, (err, result) => {
-
-      //   }
-      // )
+    if (groupId != undefined) {
       Group.findOneAndUpdate(
-        { _id: group_id },
+        { _id: groupId },
         { $push: { members: member } },
         { new: true }
-      )
+      );
     }
     else {
       res.status(statusCode.BAD_REQUEST).json({
         error: 'You cannot add',
-      })
+      });
     }
 
     res.status(statusCode.OK).json(member);
@@ -143,37 +130,36 @@ function AddUserToGroup(req, res) {
 
 function DeleteUserInGroup(req, res) {
   try {
-    const group_id = req.query.group_id;
-    const user_id = req.query.user_id;
-    const member_id = req.query.member_id;
-    var group
-    if (group_id != undefined && user_id != undefined && member_id != undefined) {
-      group = Group.findOne({ _id: group_id });
-      var id
+    const groupId = req.query.groupId;
+    const userId = req.query.userId;
+    const memberId = req.query.memberId;
+    let group;
+    if (groupId != undefined && userId != undefined && memberId != undefined) {
+      group = Group.findOne({ _id: groupId });
+      let id;
       group.exec((err, groups) => {
         if (err) res.send(err);
-        id=groups.id_user
-        if (user_id == id) {
+        id=groups.id_user;
+        if (userId == id) {
           // delete user in group
-          Group.updateOne({ _id: group_id, id_user: user_id }, { "$pull": { "members": { "id": member_id } } }, { safe: true, multi: true });
+          Group.updateOne({ _id: groupId, id_user: userId }, { "$pull": { "members": { "id": memberId } } }, { safe: true, multi: true });
           res.status(statusCode.OK).json({
-            member_id: member_id,
-            group_id: group_id
+            memberId: memberId,
+            groupId: groupId
           });
         }
         else {
           res.status(statusCode.BAD_REQUEST).json({
             error: 'you cannot delete',
-          })
-          return
+          });
+          return;
         }
       });
-      // console.log(id)
     }
     else {
       res.status(statusCode.BAD_REQUEST).json({
         error: 'you cannot delete',
-      })
+      });
     }
   } catch (error) {
     logger.error(`Delete /api/v1/group ${error}`);

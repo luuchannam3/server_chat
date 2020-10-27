@@ -10,5 +10,8 @@
         "sourceType": "module"
     },
     "rules": {
+        "semi": "error",
+        // "camelcase": [2, {"properties": "always"}],
+        "comma-spacing": [2, {"before": false, "after": true}]
     }
 }

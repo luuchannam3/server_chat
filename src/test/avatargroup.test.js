@@ -1,7 +1,8 @@
-import supertest from 'supertest'
-import Group from '../models/group'
-import Conversation from '../models/conversation'
-var server = supertest.agent('http://localhost:5000')
+import supertest from 'supertest';
+import Group from '../models/group';
+import Conversation from '../models/conversation';
+let server = supertest.agent('http://localhost:5000');
+
 const group = new Group({
     _id: "-poqmvndieuUndsnskd",
     id_user: "00000000000",
@@ -23,10 +24,10 @@ const group = new Group({
     ],
     nameGroup: "test nameGroup",
     created: Date.now()
-})
+});
 group.save((err) => {
-    if (err) console.log(err)
-})
+    if (err) console.log(err);
+});
 const conversation = new Conversation({
     _id: "-poqmvndieuUndsnskd",
     lm: "test avatarGroup lm",
@@ -39,19 +40,19 @@ const conversation = new Conversation({
         "00000000000",
         "00000000001"
     ]
-})
+});
 conversation.save((err) => {
-    if (err) console.log(err)
-})
+    if (err) console.log(err);
+});
+
 describe('avatargroup', () => {
     it('POST', (done) => {
         server
             .post('/api/v1/avatargroup?conversation_id=-poqmvndieuUndsnskd')
-            // .set('content-type', 'image/png')
             .attach('name', 'Group-icon.png', '../public/group')
             .expect(200)
             .end((err, res) => {
-                console.log(res)
+                console.log(res);
                 done();
             });
     });

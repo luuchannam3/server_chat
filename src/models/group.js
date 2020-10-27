@@ -1,6 +1,5 @@
 import { Schema, model } from 'mongoose';
 
-
 const GroupSchema = new Schema(
   {
     _id: { type: String},
@@ -20,7 +19,7 @@ const GroupSchema = new Schema(
       },
     ],
     nameGroup: { type: String },
-    created: { type: Date ,default: Date.now}
+    created: { type: Date, default: Date.now }
   },
   {
     collection: 'Group',

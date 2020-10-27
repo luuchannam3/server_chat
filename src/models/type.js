@@ -19,6 +19,6 @@ const avroSchema = {
   ]
 };
 
-const type = avro.parse(avroSchema)
+const type = avro.parse(avroSchema);
 
 module.exports = type;

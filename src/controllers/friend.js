@@ -2,29 +2,26 @@
 import statusCode from '../constant/statusCode';
 import logger from '../config/winston';
 import Friend from '../models/friend';
-import Conversation from '../models/conversation'
-import Private_Chat from '../models/private_chat'
+import Conversation from '../models/conversation';
+import privateChat from '../models/private_chat';
 
 function GetFriend(req, res) {
   try {
-    const user_id = req.query.user_id
-    var query
-    if (user_id != undefined) {
-      query = Friend.find({_id: user_id});
+    const userId = req.query.userId;
+    let query;
+    if (userId != undefined) {
+      query = Friend.find({_id: userId});
       query.exec((err, friends) => {
         if(err) res.send(err);
         res.status(statusCode.OK).json({friends});
       });
-      // console.log(query)
     } else {
       query = Friend.find({});
       query.exec((err, friends) => {
         if(err) res.send(err);
         res.status(statusCode.OK).json({friends});
       });
-      // console.log(query)
     }
-    // res.status(statusCode.OK).json(query);
   } catch (error) {
     logger.error(`GET /api/v1/friend ${error}`);
 
@@ -36,39 +33,39 @@ function GetFriend(req, res) {
 
 function AddFriend(req, res) {
   try {
-    const user_id = req.query.user_id
-    const friend_id = req.query.friend_id
-    const adress = req.body.adress
-    const imageurl = req.body.imageurl
-    const username = req.body.username
+    const userId = req.query.userId;
+    const friendId = req.query.friendId;
+    const adress = req.body.adress;
+    const imageurl = req.body.imageurl;
+    const username = req.body.username;
     const friend1 = {
-      _id: friend_id,
+      _id: friendId,
       adress: adress,
       imageurl: imageurl,
       username: username
-    }
+    };
     // add friend
-    if (user_id != undefined && friend_id != undefined) {
+    if (userId != undefined && friendId != undefined) {
       Friend.findOneAndUpdate(
-        { _id: user_id },
-        { $push: { friend: { _id: friend_id, adress: adress, imageurl: imageurl, username: username } } },
+        { _id: userId },
+        { $push: { friend: { _id: friendId, adress: adress, imageurl: imageurl, username: username } } },
         { new: true }, (err, result) => {
-          if(err) console.log(err)
-          console.log(result)
+          if(err) console.log(err);
+          console.log(result);
         }
-      )
+      );
       // create conversationId
-      var conversationId = ''
-      var id1 = '', id2 = ''
-      if (parseInt(user_id) > parseInt(friend_id)) {
-        conversationId = `${friend_id}-${user_id}`
-        id1 = friend_id
-        id2 = user_id
+      let conversationId = '';
+      let id1 = '', id2 = '';
+      if (parseInt(userId) > parseInt(friendId)) {
+        conversationId = `${friendId}-${userId}`;
+        id1 = friendId;
+        id2 = userId;
       }
       else {
-        conversationId = `${user_id}-${friend_id}`
-        id1 = user_id
-        id2 = friend_id
+        conversationId = `${userId}-${friendId}`;
+        id1 = userId;
+        id2 = friendId;
       }
       // create new converesation
       const conversation = new Conversation({
@@ -79,22 +76,21 @@ function AddFriend(req, res) {
         name: '',
         listviewer: [],
         members: [id1, id2],
-      })
+      });
       conversation.save((err) => {
-        if (err) console.log(err)
-      })
+        if (err) console.log(err);
+      });
       // add message
-      const message = new Private_Chat({
+      const message = new privateChat({
         id_Conversation: conversationId,
         Content: `Xin chào ${friend1.username}`,
         isImage: false,
-        isSender: user_id
-      })
+        isSender: userId
+      });
       message.save((err) => {
-        if (err) console.log(err)
-      })
+        if (err) console.log(err);
+      });
     }
-    console.log(friend1)
     res.status(statusCode.OK).json({ friend1 });
   } catch (error) {
     logger.error(`POST /api/v1/friend ${error}`);
@@ -107,36 +103,34 @@ function AddFriend(req, res) {
 
 function DeleteFriend(req, res) {
   try {
-    const user_id = req.query.user_id
-    const friend_id = req.query.friend_id
-    console.log(user_id)
-    console.log(friend_id)
+    const userId = req.query.userId;
+    const friendId = req.query.friendId;
 
-    if (user_id != undefined && friend_id != undefined) {
+    if (userId != undefined && friendId != undefined) {
       // delete friend
-      Friend.updateOne({ _id: user_id }, { "$pull": { "friend": { "_id": friend_id } } }, { safe: true, multi: true }, function (err, obj) {
-        if(err) throw err
-        console.log(obj)
+      Friend.updateOne({ _id: userId }, { "$pull": { "friend": { "_id": friendId } } }, { safe: true, multi: true }, function (err, obj) {
+        if(err) throw err;
+        console.log(obj);
       });
       //get conversationid
-      var conversationId = ''
-      if (parseInt(user_id) > parseInt(friend_id)) {
-        conversationId = `${friend_id}-${user_id}`
+      let conversationId = '';
+      if (parseInt(userId) > parseInt(friendId)) {
+        conversationId = `${friendId}-${userId}`;
       }
       else {
-        conversationId = `${user_id}-${friend_id}`
+        conversationId = `${userId}-${friendId}`;
       }
       // delete conversation
       Conversation.deleteOne({ _id: conversationId }, (err) => {
-        if(err) throw err
-      })
+        if(err) throw err;
+      });
       // delete message
-      Private_Chat.deleteOne({ id_Conversation: conversationId }, (err) => {
-        if(err) throw err
-      })
+      privateChat.deleteOne({ id_Conversation: conversationId }, (err) => {
+        if(err) throw err;
+      });
     }
 
-    res.status(statusCode.OK).json({ friend_id });
+    res.status(statusCode.OK).json({ friendId });
   } catch (error) {
     logger.error(`POST /api/v1/friend ${error}`);
 

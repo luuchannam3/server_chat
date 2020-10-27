@@ -1,17 +1,18 @@
-import chai from 'chai'
-import chaiHttp from 'chai-http'
-import server from '../app'
+import chai from 'chai';
+import chaiHttp from 'chai-http';
+import server from '../app';
 
-chai.should()
-var group_id
+chai.should();
+let groupId;
 chai.use(require('chai-like'));
 chai.use(require('chai-things'));
-chai.use(chaiHttp)
+chai.use(chaiHttp);
 require("babel-core/register");
 require("babel-polyfill");
+
 describe('group', () => {
     it('POST: create group', (done) => {
-        var test = {
+        let test = {
             "avatarGroup": "test avatarGroup",
             "description": "test description",
             "members": [
@@ -30,7 +31,7 @@ describe('group', () => {
             ],
             "nameGroup": "test nameGroup",
             "id_user": "CT00000001"
-        }
+        };
         chai.request(server)
             .post('/api/v1/group?user_id=CT00000001')
             .type('form')
@@ -41,19 +42,19 @@ describe('group', () => {
                 res.should.be.json;
                 // console.log(res.body)
                 res.body.should.have.property('group1');
-                group_id=res.body.group1._id
-                console.log(group_id)
+                groupId=res.body.group1._id;
+                console.log(groupId);
                 res.body.group1.should.have.property('_id');
                 res.body.group1.should.have.property('id_user');
                 res.body.group1.should.have.property('avatarGroup');
                 res.body.group1.should.have.property('description');
                 res.body.group1.should.have.property('members');
                 for (let i = 0; i < res.body.group1.members.length; i++) {
-                    res.body.group1.members[i].should.have.property('_id')
-                    res.body.group1.members[i].should.have.property('avatar')
-                    res.body.group1.members[i].should.have.property('id')
-                    res.body.group1.members[i].should.have.property('name')
-                    res.body.group1.members[i].should.have.property('token')
+                    res.body.group1.members[i].should.have.property('_id');
+                    res.body.group1.members[i].should.have.property('avatar');
+                    res.body.group1.members[i].should.have.property('id');
+                    res.body.group1.members[i].should.have.property('name');
+                    res.body.group1.members[i].should.have.property('token');
                 }
                 res.body.group1.should.have.property('nameGroup');
                 res.body.group1.should.have.property('created');
@@ -62,21 +63,21 @@ describe('group', () => {
     });
     it('GET group', (done) => {
         chai.request(server)
-            .get('/api/v1/group?group_id='+group_id)
+            .get('/api/v1/group?groupId='+groupId)
             .end((err, res) => {
                 res.should.have.status(200);
-                console.log(group_id)
+                console.log(groupId);
                 res.body.should.be.a('object');
                 res.should.be.json;
-                res.body.should.have.property('groups')
+                res.body.should.have.property('groups');
                 for (let i = 0; i < res.body.groups.length; i++) {
-                    res.body.groups[i].should.have.property('_id')
-                    res.body.groups[i].should.have.property('id_user')
-                    res.body.groups[i].should.have.property('avatarGroup')
-                    res.body.groups[i].should.have.property('description')
-                    res.body.groups[i].should.have.property('members')
-                    res.body.groups[i].should.have.property('nameGroup')
-                    res.body.groups[i].should.have.property('created')
+                    res.body.groups[i].should.have.property('_id');
+                    res.body.groups[i].should.have.property('id_user');
+                    res.body.groups[i].should.have.property('avatarGroup');
+                    res.body.groups[i].should.have.property('description');
+                    res.body.groups[i].should.have.property('members');
+                    res.body.groups[i].should.have.property('nameGroup');
+                    res.body.groups[i].should.have.property('created');
                     for (let j = 0; j < res.body.groups[i].members.length; j++) {
                         res.body.groups[i].members[j].should.have.property('_id');
                         res.body.groups[i].members[j].should.have.property('avatar');
@@ -89,14 +90,14 @@ describe('group', () => {
             });
     });
     it('PUT: add user to group', (done) => {
-        var test = {
+        let test = {
             "avatar": "test add avatar",
             "id": "11110001388",
             "name": "test add member",
             "token": "test add token"
-        }
+        };
         chai.request(server)
-            .put('/api/v1/group?group_id='+group_id)
+            .put('/api/v1/group?groupId='+groupId)
             .type('form')
             .send(test)
             .end((err, res) => {
@@ -112,14 +113,14 @@ describe('group', () => {
     });
     it('DEL: delete member in group', (done) => {
         chai.request(server)
-            .delete('/api/v1/group?group_id='+group_id+'&user_id=CT00000001&member_id=11110001388')
+            .delete('/api/v1/group?groupId='+groupId+'&user_id=CT00000001&member_id=11110001388')
             .end((err, res) => {
-                console.log(group_id)
+                console.log(groupId);
                 res.should.have.status(200);
                 res.body.should.be.a('object');
                 res.should.be.json;
-                res.body.should.have.property('member_id')
-                res.body.should.have.property('group_id')
+                res.body.should.have.property('member_id');
+                res.body.should.have.property('groupId');
                 done();
             });
     });

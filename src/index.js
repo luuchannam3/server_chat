@@ -1,8 +1,8 @@
 import http from 'http';
 import socket from 'socket.io';
-import kafka from 'kafka-node'
+import kafka from 'kafka-node';
 import app from './app';
-import type from './models/type'
+import type from './models/type';
 import fs from 'fs';
 const server = http.createServer(app);
 
@@ -17,11 +17,11 @@ kafkaProducer.on('error', (error) => console.error('Kafka producer error:', erro
 
 io.on('connection', (socket) => {
   socket.on('joinroom', (data) => {
-    var room = data
-    socket.join(room)
+    const room = data;
+    socket.join(room);
     socket.on('chat message', (data) => {
-      socket.broadcast.to(room).emit('chat message', data.id_sender + ' ' + data.message)
-      socket.emit('chat message', 'You: ' + data.message)
+      socket.broadcast.to(room).emit('chat message', data.id_sender + ' ' + data.message);
+      socket.emit('chat message', 'You: ' + data.message);
       const messageBuffer = type.toBuffer({
         conversation_id: data.conversation_id,
         Content: data.message,
@@ -33,19 +33,19 @@ io.on('connection', (socket) => {
         attributes: 1
       }];
       kafkaProducer.send(payload, function (error) {
-        if(error) throw error
+        if(error) throw error;
         console.info('Sent payload to Kafka:', payload);
       });
-    })
+    });
     socket.on('base64 file', function (msg) {
-      var string = msg.file
+      const string = msg.file;
       let base64Image = msg.file.split(';base64,').pop();
-      var chuoi = string.split(';base64')
-      var c = chuoi[0].split('image/')
-      var path = 'public/message/' + `${Date.now()}-${msg.conversation_id}.${c[1]}`
-      console.log(path)
+      const chuoi = string.split(';base64');
+      const c = chuoi[0].split('image/');
+      const path = 'public/message/' + `${Date.now()}-${msg.conversation_id}.${c[1]}`;
+      console.log(path);
       fs.writeFile('public/message/' + `${Date.now()}-${msg.conversation_id}.${c[1]}`, base64Image, { encoding: 'base64' }, function (err) {
-        if(err) throw err
+        if(err) throw err;
         console.log('File created');
       });
       socket.broadcast.to(room).emit('base64_file',
@@ -74,10 +74,10 @@ io.on('connection', (socket) => {
       }];
 
       kafkaProducer.send(payload, function (error) {
-        if(error) throw error
+        if(error) throw error;
         console.info('Sent payload to Kafka:', payload);
       });
     });
-  })
-})
+  });
+});
 server.listen(5000, () => console.log('Server is start on *:5000'));
