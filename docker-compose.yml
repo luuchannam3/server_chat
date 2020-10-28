@@ -1,27 +1,40 @@
 version: '3.4'
 services:
-  api_socket_server:
-    container_name: api_socket_server
-    command: yarn dev
+  # api_socket_server:
+  #   container_name: api_socket_server
+  #   command: yarn dev
+  #   ports:
+  #     - 5000:5000
+  #   build: 
+  #     context: .
+  #     dockerfile: ./docker/app/Dockerfile.prod
+  #   volumes:
+  #     - .:/app
+  #   networks:
+  #     - common
+  #   depends_on:
+  #     - zookeeper
+  #     - kafka
+  #     - mongodb
+  #   environment:
+  #     MONGO_URI: 'mongodb://mongodb:27017/Medical'
+  #     KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+
+  cms:
+    container_name: cms
+    image: cms
     ports:
-      - 5000:5000
-    build: 
-      context: .
-      dockerfile: ./docker/app/Dockerfile.prod
-    volumes:
-      - .:/app
+      - 8080:8080
+    depends_on:
+      - mongo
+      - redis
     networks:
       - common
-    depends_on:
-      - zookeeper
-      - kafka
-      - mongodb
     environment:
-      MONGO_URI: 'mongodb://mongodb:27017/Medical'
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      - ASPNETCORE_ENVIRONMENT=Production
 
-  mongodb:
-    container_name: mongodb
+  mongo:
+    container_name: mongo
     image: mongo:4.2.0-bionic
     ports:
       - 27017:27017
@@ -65,7 +78,6 @@ services:
       - ./volumes/redis:/data
     networks:
       - common
-
   
 networks:
   common:

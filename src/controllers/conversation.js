@@ -21,7 +21,15 @@ async function GetConversation(req, res) {
       });
     }
 
-    const cons = await Conversation.find({ mems: uid }).sort('updatedAt').skip((page - 1) * 20).limit(20);
+    const cons = await Conversation.find({ mems: uid })
+      .populate('lm')
+      .populate({
+        path: 'mems',
+        populate: { path: 'mems' },
+      })
+      .sort({ updatedAt: -1 })
+      .skip((page - 1) * 20)
+      .limit(20);
 
     return res.status(statusCode.OK).json({
       cons,
