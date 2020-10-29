@@ -17,12 +17,23 @@ RUN apk add --no-cache --virtual .gyp \
   g++ \
   && npm install \
   && apk del .gyp \
-  && mkdir -p ~/.ssh
+  && mkdir -p ~/.ssh \
+  && rm -rf package-lock.json
+
+# Installing git
+RUN apk add --no-cache git
+
+# Installing ssh
+RUN apk add --no-cache openssh-client
 
 COPY . .
-COPY $SSH_PRIVATE_KEY_FILE ~/.ssh/id_rsa
-
-RUN chmod 600 ~/.ssh/id_rsa
+# COPY $SSH_PRIVATE_KEY_FILE ~/.ssh/id_rsa
+RUN echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa \
+  && chmod 600 ~/.ssh/id_rsa 
+  # && eval $(ssh-agent -s) \
+  # && ssh-add ~/.ssh/id_rsa \
+  # && ssh-keyscan -H $CI_SSH_SERVER >> ~/.ssh/known_hosts 
+RUN yarn cache clean
 
 RUN yarn && yarn build
 
@@ -45,13 +56,23 @@ RUN apk add --no-cache --virtual .gyp \
   g++ \
   && npm install \
   && apk del .gyp \
-  && mkdir -p ~/.ssh
+  && mkdir -p ~/.ssh \
+  && rm -rf package-lock.json
+
+# Installing git
+RUN apk add --no-cache git
+
+# Installing ssh
+RUN apk add --no-cache openssh-client
 
 COPY --from=builder /app/dist ./dist
-COPY $SSH_PRIVATE_KEY_FILE ~/.ssh/id_rsa
-
-RUN chmod 600 ~/.ssh/id_rsa
-
+# COPY $SSH_PRIVATE_KEY_FILE ~/.ssh/id_rsa
+RUN echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa \
+  && chmod 600 ~/.ssh/id_rsa 
+  # && eval $(ssh-agent -s) \
+  # && ssh-add ~/.ssh/id_rsa \
+  # && ssh-keyscan -H $CI_SSH_SERVER >> ~/.ssh/known_hosts 
+# RUN yarn cache clean
 RUN yarn install --production=true
 
 RUN rm -rf ~/.ssh/id_rsa

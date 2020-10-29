@@ -8,6 +8,12 @@ RUN apk add --no-cache openssl \
     && tar -C /usr/local/bin -xzvf dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
     && rm dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz
 
+# Installing git
+RUN apk add --no-cache git
+
+# Installing ssh
+RUN apk add --no-cache openssh-client
+
 # Installing bash.
 RUN apk add --no-cache bash bash-doc bash-completion
 
@@ -16,12 +22,13 @@ RUN apk add --no-cache --virtual .gyp \
     make \
     g++ \
     && npm install \
-    && apk del .gyp
+    && apk del .gyp \
+    && rm -rf package-lock.json
 
 COPY . .
 
-RUN yarn
-
+RUN yarn install
+RUN yarn cache clean
 
 EXPOSE 5000
 
