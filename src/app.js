@@ -5,18 +5,15 @@ import Redis from 'ioredis';
 import cors from 'cors';
 import config from './config/main';
 import logger from './config/winston';
-import Conversation from './controllers/conversation';
-import AvatarGroup from './controllers/upload_img';
-import Message from './controllers/message';
 import { producer } from './config/kafka';
+import { AuthMiddleware } from './middleware';
+import { ConversationRoutes, MessageRoutes, UploadImgRoutes } from './routes';
 
 const app = express();
 
 export const client = new Redis({
-  // host: config.REDIS.HOST,
   host: 'redis',
   port: '6379',
-  // port: config.REDIS.PORT,
 });
 
 // RetryConnection :
@@ -57,13 +54,12 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.text());
 app.use(cors());
 
-app.route('/api/v1/conversation')
-  .get(Conversation.GetConversation);
+app.get('/healthz', (req, res) => res.status(200).json({
+  msg: 'OK',
+}));
 
-app.route('/api/v1/upload_img')
-  .post(AvatarGroup.UploadImage);
-
-app.route('/api/v1/message')
-  .get(Message.GetMessage);
+app.use('/api/v1/conversation', AuthMiddleware, ConversationRoutes);
+app.use('/api/v1/message', AuthMiddleware, MessageRoutes);
+app.use('/api/v1/upload_img', AuthMiddleware, UploadImgRoutes);
 
 export default app;

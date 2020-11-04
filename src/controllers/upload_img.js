@@ -5,8 +5,6 @@ import logger from '../config/winston';
 
 function UploadImage(req, res) {
   try {
-    let filename;
-
     const diskStorage = multer.diskStorage({
       destination: (_req, _file, cb) => {
         cb(null, '././public/upload/');
@@ -21,7 +19,7 @@ function UploadImage(req, res) {
           });
         }
 
-        filename = `${Date.now()}${path.extname(file.originalname)}`;
+        const filename = `${Date.now()}${path.extname(file.originalname)}`;
         cb(null, filename);
       },
     });
@@ -33,11 +31,11 @@ function UploadImage(req, res) {
         console.log(error);
       }
 
-      const { url } = req.file;
+      const { filename } = req.file;
 
-      return res.status(statusCode.OK).json(
-        url,
-      );
+      return res.status(statusCode.OK).json({
+        filename,
+      });
     });
   } catch (error) {
     logger.error(`Post /api/v1/upload_img ${error}`);

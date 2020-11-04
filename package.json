@@ -14,8 +14,13 @@
   },
   "dependencies": {
     "app-root-path": "^3.0.0",
+<<<<<<< HEAD
     "avsc": "^5.5.2",
     "axios": "^0.20.0",
+=======
+    "avsc": "^5.4.22",
+    "axios": "^0.21.0",
+>>>>>>> b5fc46fae1ecd1ed99df26d4fc8fb58c6b0ad2d0
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
     "browser-image-compression": "^1.0.12",
