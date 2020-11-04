@@ -1,0 +1,12 @@
+{
+  "name": "models-common",
+  "version": "1.0.0+42dfc03d",
+  "description": "models common for socket chat",
+  "main": "index.js",
+  "author": "anhnt<anh.nt@zinza.com.vn>",
+  "license": "MIT",
+  "dependencies": {
+    "mongoose": "^5.10.3"
+  },
+  "yalcSig": "42dfc03d4026db33e9f342a9333e0db0"
+}

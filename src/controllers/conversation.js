@@ -14,15 +14,14 @@ async function GetConversation(req, res) {
   try {
     const { uid } = req.query;
     const page = req.query.page || 1;
-
     if (!uid) {
       return res.status(statusCode.BAD_REQUEST).json({
         error: 'Invalid params',
       });
     }
 
-    const cons = await Conversation.find({ mems: uid }).sort('updatedAt').skip((page - 1) * 20).limit(20);
-
+    // const cons = await Conversation.find({ mems: uid }).sort('updatedAt').skip((page - 1) * 20).limit(20);
+    const cons = await Conversation.find({});
     return res.status(statusCode.OK).json({
       cons,
     });

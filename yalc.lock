@@ -1,0 +1,9 @@
+{
+  "version": "v1",
+  "packages": {
+    "models-common": {
+      "signature": "42dfc03d4026db33e9f342a9333e0db0",
+      "file": true
+    }
+  }
+}

@@ -13,8 +13,10 @@ import { producer } from './config/kafka';
 const app = express();
 
 export const client = new Redis({
-  host: config.REDIS.HOST,
-  port: config.REDIS.PORT,
+  // host: config.REDIS.HOST,
+  host: 'redis',
+  port: '6379',
+  // port: config.REDIS.PORT,
 });
 
 // RetryConnection :

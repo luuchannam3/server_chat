@@ -63,6 +63,9 @@ services:
       - 6379:6379
     volumes:
       - ./volumes/redis:/data
+    environment: 
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
     networks:
       - common
 
